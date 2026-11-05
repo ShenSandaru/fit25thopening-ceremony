@@ -2,11 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-type FuturisticHudOverlayProps = {
-  hideTopHeader?: boolean;
-};
-
-export function FuturisticHudOverlay({ hideTopHeader = false }: FuturisticHudOverlayProps) {
+export function FuturisticHudOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Ambient floating energy particles
@@ -138,19 +134,6 @@ export function FuturisticHudOverlay({ hideTopHeader = false }: FuturisticHudOve
         {/* Bottom-Right Corner Reticle (Clean, non-colliding) */}
         <div className="absolute -bottom-1 -right-1 size-6 border-b-2 border-r-2 border-gold" />
       </div>
-
-      {/* Top Holographic Navigation Bar (Hidden when screen identity takes precedence) */}
-      {!hideTopHeader && (
-        <header className="absolute top-4 sm:top-6 left-0 right-0 z-20 flex flex-col items-center justify-center text-center">
-          <div className="inline-flex items-center gap-3 rounded-full border border-cyan-500/30 bg-navy-blue/80 px-5 py-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.15)]">
-            <span className="size-2 animate-ping rounded-full bg-gold" />
-            <p className="font-mono text-[11px] sm:text-xs font-semibold tracking-[0.3em] text-cyan-300 uppercase">
-              Faculty of Information Technology · University of Moratuwa
-            </p>
-            <span className="size-2 animate-ping rounded-full bg-cyan-400" />
-          </div>
-        </header>
-      )}
     </>
   );
 }

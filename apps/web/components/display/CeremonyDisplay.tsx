@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useCeremonyChannel } from "@/hooks/use-ceremony-channel";
 import { countdownSecondsRemaining, displayView } from "@/lib/ceremony-sync";
 import { FuturisticHudOverlay } from "./FuturisticHudOverlay";
-import { RoboticEnergyCore } from "./RoboticEnergyCore";
+import { UniversityLogoProgress } from "./UniversityLogoProgress";
 import { HolographicHandprints } from "./HolographicHandprints";
 import { SystemInitialization } from "./SystemInitialization";
 import { FuturisticCountdown } from "./FuturisticCountdown";
@@ -78,15 +78,13 @@ export function CeremonyDisplay() {
     await channel.audioRef.current?.unlock();
   }
 
-  const isWelcomeOrOpened = view === "welcome" || view === "opened";
-
   return (
     <main
       data-display-view={view}
       className="display-stage relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-slate-950 text-white font-sans selection:bg-gold selection:text-navy-blue"
     >
       {/* Sci-Fi HUD Ambient Canvas & Grid Overlay */}
-      <FuturisticHudOverlay hideTopHeader={isWelcomeOrOpened} />
+      <FuturisticHudOverlay />
 
       {/* Main Display Stage Container */}
       <section className="relative z-10 flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-between overflow-hidden px-4 py-4 sm:px-8 sm:py-6 text-center">
@@ -163,9 +161,9 @@ export function CeremonyDisplay() {
             </div>
           ) : view === "waiting-for-activations" ? (
             <div className="display-enter flex w-full flex-col items-center gap-[clamp(0.75rem,2.5vh,2rem)]">
-              {/* Dynamic Robotic Core reacting to guest activations */}
+              {/* Central University of Moratuwa Identity with Progress Border */}
               <div className="relative">
-                <RoboticEnergyCore activatedCount={activatedCount} compact />
+                <UniversityLogoProgress activatedCount={activatedCount} />
               </div>
 
               {/* Status Header */}
