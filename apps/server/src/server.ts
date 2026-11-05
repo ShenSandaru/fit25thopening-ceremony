@@ -16,17 +16,18 @@ function loadEnv() {
 
 const env = loadEnv();
 const runtime = createRuntime(env);
+const listenHost = env.HOST === "0.0.0.0" ? "::" : env.HOST;
 
 runtime.logger.info(`${PROJECT_NAME} starting`, {
-  host: env.HOST,
+  host: listenHost,
   port: env.PORT,
   environment: env.NODE_ENV,
   persistence: "in-memory",
 });
 
-runtime.httpServer.listen(env.PORT, env.HOST, () => {
+runtime.httpServer.listen(env.PORT, listenHost, () => {
   runtime.logger.info(`${PROJECT_NAME} server listening`, {
-    url: `http://${env.HOST}:${env.PORT}`,
+    url: `http://${listenHost}:${env.PORT}`,
     environment: env.NODE_ENV,
   });
 });

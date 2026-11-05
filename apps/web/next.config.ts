@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://127.0.0.1:4000";
+function resolveServerUrl(raw: string | undefined): string {
+  const trimmed = raw?.trim().replace(/\/+$/, "");
+  if (!trimmed) {
+    return "http://127.0.0.1:4000";
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `http://${trimmed}`;
+}
+
+const serverUrl = resolveServerUrl(process.env.NEXT_PUBLIC_SERVER_URL);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
