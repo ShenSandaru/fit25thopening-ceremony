@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { UpperCornerCelebration } from "./UpperCornerCelebration";
 
 type LaunchRevealProps = {
   audioUnavailable?: boolean;
@@ -9,6 +10,8 @@ type LaunchRevealProps = {
 export function LaunchReveal({ audioUnavailable = false }: LaunchRevealProps) {
   return (
     <div className="display-enter relative z-20 flex w-full max-w-6xl flex-col items-center justify-center gap-4 sm:gap-6 px-2 sm:px-4 text-center select-none">
+      {/* Upper-Corner Celebration Confetti, Sparkles & Ceremonial Spotlight Beams */}
+      <UpperCornerCelebration />
       {/* Cinematic Ambient Atmosphere: Deep Navy Dominance & Restrained Subtle Cyan/Gold Accents */}
       <div
         aria-hidden="true"
@@ -144,7 +147,7 @@ export function LaunchReveal({ audioUnavailable = false }: LaunchRevealProps) {
 
           {/* Ceremonial Subheading */}
           <h2 className="text-xs sm:text-sm font-mono font-medium tracking-[0.3em] text-cyan-300/90 uppercase">
-            FIT EXPO Opening Ceremony
+            FIT EXPO INAUGURATION CEREMONY
           </h2>
 
           {/* Hero Title: FIT EXPO 2026 */}

@@ -1,3 +1,3 @@
-export const PROJECT_NAME = "FIT EXPO Opening Ceremony";
+export const PROJECT_NAME = "FIT EXPO INAUGURATION CEREMONY";
 
 export const DEFAULT_SERVER_PORT = 4000;

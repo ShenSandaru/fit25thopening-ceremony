@@ -4,7 +4,7 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 export const metadata: Metadata = {
   title: `Organizer Dashboard | ${PROJECT_NAME}`,
-  description: "Official organizer management console for the FIT EXPO Opening Ceremony",
+  description: "Official organizer management console for the FIT EXPO Inauguration Ceremony",
 };
 
 export default function AdminPage() {

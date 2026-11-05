@@ -101,7 +101,8 @@ describe("CeremonyAudio", () => {
     expect(CEREMONY_AUDIO_CONFIG.cues.activation).toBe("/audio/placeholders/activation.wav");
     expect(CEREMONY_AUDIO_CONFIG.cues.countdown).toBe("/audio/placeholders/countdown.wav");
     expect(CEREMONY_AUDIO_CONFIG.cues.sync).toBe("/audio/placeholders/voiceover.wav");
-    expect(CEREMONY_AUDIO_CONFIG.cues.impact).toBe("/audio/placeholders/opening.wav");
+    expect(CEREMONY_AUDIO_CONFIG.cues.impact).toBe("/audio/placeholders/opening.mp3");
+    expect(CEREMONY_AUDIO_CONFIG.cues.opening).toBe("/audio/placeholders/opening.mp3");
   });
 
   it("transitions background music tracks according to ceremony state", async () => {
