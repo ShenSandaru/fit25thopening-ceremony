@@ -24,7 +24,11 @@ export type CeremonyChannel = {
   socketRef: { current: Socket<ServerToClientEvents, ClientToServerEvents> | null };
 };
 
-export function useCeremonyChannel(enabled: boolean, cues = false): CeremonyChannel {
+export function useCeremonyChannel(
+  enabled: boolean,
+  cues = false,
+  role?: "admin",
+): CeremonyChannel {
   const [ceremony, setCeremony] = useState<CeremonyState | null>(null);
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [connected, setConnected] = useState(false);
@@ -56,7 +60,11 @@ export function useCeremonyChannel(enabled: boolean, cues = false): CeremonyChan
     if (!enabled) {
       return;
     }
-    const next = io({ path: "/socket.io", withCredentials: true });
+    const next = io({
+      path: "/socket.io",
+      withCredentials: true,
+      ...(role ? { auth: { role } } : {}),
+    });
     socketRef.current = next;
 
     const apply = (incoming: CeremonyState) => {
@@ -119,7 +127,7 @@ export function useCeremonyChannel(enabled: boolean, cues = false): CeremonyChan
       socketRef.current = null;
       setConnected(false);
     };
-  }, [cues, enabled]);
+  }, [cues, enabled, role]);
 
   useEffect(() => {
     if (ceremony?.status !== "COUNTDOWN") {

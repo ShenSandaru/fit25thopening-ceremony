@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: Phases 1–4 are implemented. Guest tablets and the main display at `/` use in-memory device sessions (one active session per role, HttpOnly cookie, reconnect grace). `guest:activate` uses the session role. The display derives its screen from `event:state` and renders the countdown from `opensAt` plus a `clock:sync` offset. Until the admin dashboard exists, the display session may call `POST /api/event/begin-activations` to enter `COLLECTING_ACTIVATIONS`. Official audio is still pending; the display plays labelled local placeholders. A backend restart clears device sessions and ceremony state.
+> Status: Phases 1–7 are implemented. Guest tablets and the main display at `/` use in-memory device sessions (one active session per role, HttpOnly cookie, reconnect grace). `guest:activate` strictly uses the verified session role. The main display derives its visual state from `event:state` and renders the countdown from `opensAt` plus a `clock:sync` offset. The Admin Dashboard at `/admin` provides full operational control (prepare, start, abort, reset, device monitoring, guest session release, and activity stream) without password overhead for trusted venue organizers. Official audio is still pending; the display plays labelled local placeholders. A backend restart clears device sessions and ceremony state in memory.
 
 ## 1. High-level architecture
 

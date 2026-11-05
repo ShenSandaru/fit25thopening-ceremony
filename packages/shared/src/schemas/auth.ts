@@ -24,3 +24,7 @@ export const assignGuestSessionBodySchema = z.strictObject({
 });
 
 export const releaseGuestSessionBodySchema = emptyObjectSchema;
+
+export const releaseRoleSessionBodySchema = z.strictObject({
+  role: guestRoleSchema,
+});

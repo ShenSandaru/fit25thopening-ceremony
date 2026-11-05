@@ -6,7 +6,7 @@ Three distinguished guests (the Chief Guest, the Vice Chancellor and the Dean of
 
 ## Current status
 
-**Phase 4 complete: main display and live synchronization.** `/` is the ceremony display in a browser on the ceremony laptop. The projector shows that screen by mirroring or an extended desktop. An organizer assigns each tablet at `/guest` and uses **Begin activations** on the display. The server starts the countdown only after all three activations. The display follows server timestamps. Audio files under `public/audio/placeholders/` are temporary tones, not official ceremony audio. The admin dashboard is still later. A backend restart clears device sessions and ceremony state.
+**Phase 7 complete: Organizer Admin Dashboard.** The system provides the full ceremony workflow: `/` is the ceremony main display; tablet roles are assigned at `/guest`; `/admin` provides the trusted organizer console to prepare, start activations, abort, reset, monitor device presence, release tablet sessions, and view the real-time activity stream. The server starts the countdown only after all three activations. The display follows authoritative server timestamps. In line with the trusted event environment, `/admin` is directly accessible without password overhead, while guest tablets remain strictly session-authenticated. A backend restart clears device sessions and ceremony state in memory.
 
 ## Interfaces
 

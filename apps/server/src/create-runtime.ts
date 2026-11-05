@@ -36,7 +36,27 @@ export function createRuntime(env: ServerEnv, options: { clock?: Clock } = {}): 
     secret: env.SESSION_SECRET,
   });
   const activityLog = new ActivityLog({ clock });
-  const app = createApp({ env, ceremony, sessions, clock, logger });
+  const ioHolder: { io: CeremonySocketServer | null } = { io: null };
+  const app = createApp({
+    env,
+    ceremony,
+    sessions,
+    activityLog,
+    clock,
+    logger,
+    onPresenceChange: () => {
+      if (ioHolder.io) {
+        const payload = { devices: sessions.presence() };
+        ioHolder.io.to("ceremony").emit("device:status", payload);
+        ioHolder.io.to("role:admin").emit("device:status", payload);
+      }
+    },
+    onActivityLogged: (entry) => {
+      if (ioHolder.io) {
+        ioHolder.io.to("role:admin").emit("activity:logged", entry);
+      }
+    },
+  });
   const httpServer = createServer(app);
   const io = createSocketServer({
     httpServer,
@@ -47,6 +67,7 @@ export function createRuntime(env: ServerEnv, options: { clock?: Clock } = {}): 
     clock,
     logger,
   });
+  ioHolder.io = io;
 
   return {
     env,

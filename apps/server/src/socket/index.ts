@@ -110,7 +110,7 @@ export function createSocketServer(deps: {
 
   deps.ceremony.subscribe((change) => {
     broadcastChange(io, change);
-    deps.activityLog.append({
+    const entry = deps.activityLog.append({
       type: "STATE_CHANGED",
       actorRole: "server",
       message: `Ceremony status is ${change.state.status}`,
@@ -120,38 +120,53 @@ export function createSocketServer(deps: {
         runId: change.state.runId,
       },
     });
+    io.to(roleRoom("admin")).emit(SERVER_EVENTS.ACTIVITY_LOGGED, entry);
   });
 
   io.use((socket, next) => {
     const session = deps.sessions.current(socket.handshake.headers.cookie);
-    if (!session) {
-      next(new Error("UNAUTHORIZED"));
+    if (session) {
+      socket.data.role = session.role;
+      socket.data.sessionId = session.id;
+      next();
       return;
     }
-    socket.data.role = session.role;
-    socket.data.sessionId = session.id;
-    next();
+    const handshakeRole = socket.handshake.auth?.role ?? socket.handshake.query?.role;
+    if (handshakeRole === "admin") {
+      socket.data.role = "admin";
+      socket.data.sessionId = undefined;
+      next();
+      return;
+    }
+    next(new Error("UNAUTHORIZED"));
   });
 
   io.on("connection", (socket) => {
     const sessionId = socket.data.sessionId;
     const role = socket.data.role;
-    if (!sessionId || !role || (role !== "display" && !isGuestRole(role))) {
+    if (!role || (role !== "display" && role !== "admin" && !isGuestRole(role))) {
       socket.disconnect(true);
       return;
     }
 
-    deps.sessions.markConnected(sessionId);
+    if (sessionId) {
+      deps.sessions.markConnected(sessionId);
+    }
     socket.join(CEREMONY_ROOM);
     socket.join(roleRoom(role));
     deps.logger.info("Socket connected", { socketId: socket.id, role });
-    deps.activityLog.append({
-      type: "DEVICE_CONNECTED",
-      actorRole: role,
-      message: role === "display" ? "Display connected" : "Guest tablet connected",
-      data: { socketId: socket.id, role },
-    });
-    emitPresence(io, deps.sessions);
+    if (role !== "admin") {
+      const entry = deps.activityLog.append({
+        type: "DEVICE_CONNECTED",
+        actorRole: role,
+        message: role === "display" ? "Display connected" : "Guest tablet connected",
+        data: { socketId: socket.id, role },
+      });
+      io.to(roleRoom("admin")).emit(SERVER_EVENTS.ACTIVITY_LOGGED, entry);
+      emitPresence(io, deps.sessions);
+    } else {
+      socket.emit(SERVER_EVENTS.DEVICE_STATUS, { devices: deps.sessions.presence() });
+    }
 
     socket.emit(SERVER_EVENTS.EVENT_STATE, deps.ceremony.getState());
 
@@ -165,7 +180,7 @@ export function createSocketServer(deps: {
         ack(err("VALIDATION_ERROR", "Invalid activation payload."));
         return;
       }
-      if (!allowActivate(sessionId, deps.clock.now())) {
+      if (!sessionId || !allowActivate(sessionId, deps.clock.now())) {
         ack(err("RATE_LIMITED", "Too many activation attempts."));
         return;
       }
@@ -176,6 +191,13 @@ export function createSocketServer(deps: {
           ack(err("INTERNAL_ERROR", "Activation was not recorded."));
           return;
         }
+        const entry = deps.activityLog.append({
+          type: "ACTIVATION_ACCEPTED",
+          actorRole: role,
+          message: `${role} activated control`,
+          data: { role, activatedAt: activation.activatedAt, version: state.version },
+        });
+        io.to(roleRoom("admin")).emit(SERVER_EVENTS.ACTIVITY_LOGGED, entry);
         ack(ok({ role, activatedAt: activation.activatedAt, version: state.version }));
       } catch (error) {
         if (error instanceof DomainError) {
@@ -204,15 +226,18 @@ export function createSocketServer(deps: {
     });
 
     socket.on("disconnect", (reason) => {
-      deps.sessions.markDisconnected(sessionId);
-      emitPresence(io, deps.sessions);
-      deps.logger.info("Socket disconnected", { socketId: socket.id, role, reason });
-      deps.activityLog.append({
-        type: "DEVICE_DISCONNECTED",
-        actorRole: role,
-        message: role === "display" ? "Display disconnected" : "Guest tablet disconnected",
-        data: { socketId: socket.id, role, reason },
-      });
+      if (sessionId) {
+        deps.sessions.markDisconnected(sessionId);
+        emitPresence(io, deps.sessions);
+        deps.logger.info("Socket disconnected", { socketId: socket.id, role, reason });
+        const entry = deps.activityLog.append({
+          type: "DEVICE_DISCONNECTED",
+          actorRole: role,
+          message: role === "display" ? "Display disconnected" : "Guest tablet disconnected",
+          data: { socketId: socket.id, role, reason },
+        });
+        io.to(roleRoom("admin")).emit(SERVER_EVENTS.ACTIVITY_LOGGED, entry);
+      }
     });
   });
 

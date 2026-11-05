@@ -1,31 +1,31 @@
 # Security
 
-> Status: Guest access is a **device session**, not a password account. An organizer assigns each tablet on `/guest`. The server stores one active session per guest role, sets an HttpOnly cookie, and derives the role from that cookie on REST and Socket.IO. Admin password authentication is still a later phase.
+> Status: Guest access uses **device sessions** with HMAC-signed HttpOnly cookies assigned on `/guest`. The Admin Dashboard (`/admin`) is directly accessible without password authentication to provide a clean, non-overengineered operational console for trusted organizers during the live event. Guest activations remain strictly session-validated, and unauthenticated/admin sockets are forbidden from triggering activations.
 
 ## 1. Threat model (summary)
 
 The system runs on a venue network for a single live event. Realistic risks:
 
-- Someone on the same network opens a guest or admin URL and tries to activate, start, or abort the ceremony.
+- Someone on the same network opens a guest URL and tries to activate without the tablet.
 - A guest tablet is left unattended or its page is copied to another device.
 - A misbehaving or duplicated client sends repeated or forged requests.
 - Secrets leak through the repository, client bundles, screenshots, or logs.
 - The network is shared (for example, university Wi-Fi) and traffic may be observable.
 
-Goal: no one can trigger, block, or fake any ceremony step without the right credential, and the server rejects anything that does not follow the state machine.
+Goal: no one can trigger or fake guest activations without an assigned device session, and the server strictly rejects anything that violates the ceremony state machine.
 
-### Phase 2 authentication boundary (current)
+### Authentication and Access Boundaries
 
-| Surface                                                           | Phase 2 behaviour                                                                |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `GET /api/health`                                                 | Public                                                                           |
-| `GET /api/event/state`                                            | Available without session in development/test only; `UNAUTHORIZED` in production |
-| Socket.IO connection                                              | Allowed without session; receives `event:state`; may call `clock:sync`           |
-| `guest:activate`                                                  | **Not registered** on the socket server                                          |
-| Admin REST (`prepare`, `start`, `abort`, `reset`, `manual-start`) | **Not exposed**                                                                  |
-| `CeremonyService` mutations                                       | Callable only in-process (unit tests / future authenticated handlers)            |
-
-Phase 3 must replace the interim event-state gate with real session auth and refuse unauthenticated sockets.
+| Surface                                              | Access Control & Enforcement                                                                                                                          |
+| :--------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/health`                                    | Public reachability check (non-secret).                                                                                                               |
+| `GET /api/event/state`                               | Session-authenticated or development/test inspection.                                                                                                 |
+| `POST /api/event/prepare`, `start`, `abort`, `reset` | Direct REST admin operations for trusted event console. Transitions validated by `CeremonyService`.                                                   |
+| `GET /api/event/activity`, `GET /api/devices/status` | Read-only telemetry for the organizer console.                                                                                                        |
+| `POST /api/guest-sessions/assign`                    | Rate-limited tablet role assignment. Enforces 1 active tablet per role.                                                                               |
+| `POST /api/guest-sessions/release-role`              | Organizer tablet release. Blocked if the guest has already activated in current run.                                                                  |
+| Socket.IO connection                                 | Requires session cookie or `auth: { role: "admin" }` read-only subscription. Sockets without credentials or admin role are rejected (`UNAUTHORIZED`). |
+| `guest:activate` event                               | Strictly requires authenticated guest session (`chief`, `vice-chancellor`, `dean`). Admin and display sockets are rejected (`FORBIDDEN`).             |
 
 ## 2. Roles and permissions (RBAC)
 

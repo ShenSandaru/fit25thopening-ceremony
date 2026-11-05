@@ -5,6 +5,7 @@ export {
   guestAuthBodySchema,
   logoutBodySchema,
   releaseGuestSessionBodySchema,
+  releaseRoleSessionBodySchema,
 } from "./auth.js";
 export { emptyObjectSchema, guestRoleSchema, roleSchema } from "./common.js";
 export {

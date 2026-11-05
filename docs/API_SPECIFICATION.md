@@ -1,6 +1,6 @@
 # API Specification
 
-> Status: Phases 3–4 use device sessions, not password login. Implemented: guest assign/current/release, `POST /api/display-sessions/claim` (one display), `POST /api/event/begin-activations` (display session only; interim until the admin dashboard), session-gated `GET /api/event/state`, and authenticated `guest:activate`. `device:status` is emitted to the `ceremony` room and `role:admin`. Password-login endpoints below remain the later admin design and are not implemented. The ceremony screen is `/`, not `/display`.
+> Status: Phase 7 complete. Implemented: guest assign/current/release, `POST /api/display-sessions/claim` (one display), admin lifecycle controls (`POST /api/event/prepare`, `start`, `abort`, `reset`), `GET /api/event/activity`, `GET /api/devices/status`, `POST /api/guest-sessions/release-role`, session-gated `GET /api/event/state`, and authenticated `guest:activate`. Socket.IO broadcasts `event:state`, `event:activation-started`, `guest:activated`, `event:countdown-started`, `event:opened`, `event:aborted`, `event:reset`, `device:status`, and `activity:logged`. Admin endpoints are directly accessible for trusted organizers without password authentication. The main ceremony screen is at `/`, and the admin dashboard is at `/admin`.
 
 ## 1. Overview
 

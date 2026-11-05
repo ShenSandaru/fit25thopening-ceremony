@@ -27,6 +27,7 @@ function connect(
   url: string,
   cookie?: string,
   origin = "http://localhost:3000",
+  auth?: { role?: string },
 ): Socket<ServerToClientEvents, ClientToServerEvents> {
   return createClient(url, {
     transports: ["websocket"],
@@ -34,6 +35,7 @@ function connect(
       Origin: origin,
       ...(cookie ? { Cookie: cookie } : {}),
     },
+    auth,
     forceNew: true,
   });
 }
@@ -185,5 +187,25 @@ describe("Socket.IO foundation", () => {
     expect(accepted).toMatchObject({ ok: true, data: { role: "chief" } });
     expect(runtime.ceremony.getState().activations.chief).not.toBeNull();
     expect(runtime.ceremony.getState().activations.dean).toBeNull();
+  });
+
+  it("connects as admin with role auth, receives state, and is forbidden from activating", async () => {
+    runtime = createRuntime(createTestEnv());
+    const url = await listen(runtime);
+    const socket = connect(url, undefined, "http://localhost:3000", { role: "admin" });
+    sockets.push(socket);
+
+    const state = await new Promise((resolve) => {
+      socket.on(SERVER_EVENTS.EVENT_STATE, resolve);
+    });
+    expect(state).toMatchObject({ status: "WAITING" });
+
+    const activateResult = await new Promise((resolve) => {
+      socket.emit(CLIENT_EVENTS.GUEST_ACTIVATE, {}, resolve);
+    });
+    expect(activateResult).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
   });
 });

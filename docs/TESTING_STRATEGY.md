@@ -1,6 +1,6 @@
 # Testing Strategy
 
-> Status: Phases 2–4 automated the ceremony state machine, device sessions, guest activation, display countdown recovery, and placeholder-audio failure. Admin abort, reset, and manual start remain Phase 7. Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
+> Status: Phases 2–7 automated the ceremony state machine, device sessions, guest activation, display countdown recovery, admin lifecycle endpoints (prepare, start, abort, reset), tablet session release, live presence/activity stream, and E2E dashboard orchestration. Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. Test levels and tools (proposed)
 

@@ -250,24 +250,25 @@ flowchart LR
 
 **Dependencies:** Phase 4.
 
-| ID     | Task                                                                    | Status      |
-| ------ | ----------------------------------------------------------------------- | ----------- |
-| P7-T01 | Admin REST endpoints: prepare, start, abort, reset                      | NOT STARTED |
-| P7-T02 | `POST /api/event/manual-start` with phrase, password re-entry and audit | NOT STARTED |
-| P7-T03 | `GET /api/event/activity` and `activity:logged`                         | NOT STARTED |
-| P7-T04 | `/admin` route: state panel, controls with confirmations                | NOT STARTED |
-| P7-T05 | Guest status cards and device presence table                            | NOT STARTED |
-| P7-T06 | Activity log view                                                       | NOT STARTED |
-| P7-T07 | Manual start two-step dialog                                            | NOT STARTED |
-| P7-T08 | Tests TS-10, TS-11, TS-15, TS-17                                        | NOT STARTED |
+| ID     | Task                                                                                                                         | Status                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| P7-T01 | Admin REST endpoints: prepare, start, abort, reset                                                                           | DONE                                                                                                    |
+| P7-T02 | `POST /api/event/manual-start` with phrase, password re-entry and audit                                                      | NOT IMPLEMENTED (excluded by architectural decision: trusted organizer environment, no admin passwords) |
+| P7-T03 | `GET /api/event/activity` and `activity:logged` live socket emissions                                                        | DONE                                                                                                    |
+| P7-T04 | `/admin` route: state panel, operational controls with confirmation modals                                                   | DONE (directly accessible without login for trusted organizers)                                         |
+| P7-T05 | Guest status cards and device presence table                                                                                 | DONE                                                                                                    |
+| P7-T06 | Activity log view with local timestamps and real-time updates                                                                | DONE                                                                                                    |
+| P7-T07 | Guest tablet session release (`POST /api/guest-sessions/release-role`) with confirmation and prevention if already activated | DONE                                                                                                    |
+| P7-T08 | Automated tests for admin lifecycle, session release, and E2E dashboard interactions                                         | DONE (REST integration in `api.integration.test.ts` and E2E in `admin.spec.ts`)                         |
 
-**Deliverables:** operational admin dashboard.
+**Deliverables:** operational admin dashboard at `/admin`, REST admin endpoints, real-time presence and activity stream.
 
 **Acceptance criteria:**
 
-- Every admin action enforces the state machine and permissions.
-- AC-FR-045 passes; every manual-start attempt is audited.
-- Dashboard is keyboard operable (NFR-008).
+- Every admin action enforces the authoritative state machine (`CeremonyService`).
+- Dashboard is keyboard operable with accessible dialogs (NFR-008).
+- Guest sessions can be released prior to activation; accepted activations are safeguarded.
+- `/admin` is directly accessible on the trusted event console without unnecessary password layers.
 
 ---
 

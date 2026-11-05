@@ -5,16 +5,18 @@ import {
   GUEST_SESSION_TTL_MS,
   SESSION_COOKIE_NAME,
   isGuestRole,
+  type DeviceRole,
   type DeviceSessionStatus,
   type DeviceStatus,
   type GuestRole,
+  type RoleAvailability,
 } from "@fit-expo/shared";
 import type { Response } from "express";
 import type { ServerEnv } from "../config/env.js";
 import { DomainError } from "../errors/domain-error.js";
 import { systemClock, type Clock, type TimeoutHandle } from "../state/clock.js";
 
-export type DeviceRole = GuestRole | "display";
+export type { DeviceRole, RoleAvailability };
 
 export type DeviceSession = {
   id: string;
@@ -24,12 +26,6 @@ export type DeviceSession = {
   expiresAt: number;
   disconnectedAt: number | null;
   lastSeenAt: number | null;
-};
-
-export type RoleAvailability = {
-  role: GuestRole;
-  status: DeviceSessionStatus;
-  available: boolean;
 };
 
 type GuestSessionServiceOptions = {
@@ -148,6 +144,16 @@ export class GuestSessionService {
     this.connectionCounts.delete(sessionId);
     session.status = "RELEASED";
     session.disconnectedAt = null;
+  }
+
+  releaseRole(role: DeviceRole): DeviceSession | null {
+    this.sweep();
+    const session = this.activeSessionForRole(role);
+    if (!session) {
+      return null;
+    }
+    this.release(session.id);
+    return session;
   }
 
   releaseFromCookie(cookieHeader: string | undefined): void {
@@ -289,7 +295,7 @@ export class GuestSessionService {
     return this.sessions.get(sessionId) ?? null;
   }
 
-  private activeSessionForRole(role: DeviceRole): DeviceSession | undefined {
+  activeSessionForRole(role: DeviceRole): DeviceSession | undefined {
     for (const session of this.sessions.values()) {
       if (session.role !== role || session.status === "RELEASED") {
         continue;
