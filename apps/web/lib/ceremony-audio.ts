@@ -14,9 +14,9 @@ export const CEREMONY_AUDIO_CONFIG = {
     activation: "/audio/placeholders/activation.wav",
     countdown: "/audio/placeholders/countdown.wav",
     sync: "/audio/placeholders/voiceover.wav",
-    impact: "/audio/placeholders/opening.wav",
+    impact: "/audio/placeholders/opening.mp3",
     voiceover: "/audio/placeholders/voiceover.wav",
-    opening: "/audio/placeholders/opening.wav",
+    opening: "/audio/placeholders/opening.mp3",
     ambient: "/audio/placeholders/ambient.wav",
   },
   volumes: {
@@ -26,7 +26,7 @@ export const CEREMONY_AUDIO_CONFIG = {
     countdownCues: 0.65, // 55–70%
     finalLaunchMusic: 0.5, // 40–55%
     syncTransition: 0.55, // 50–60%
-    impactCue: 0.85, // 80–90% celebratory launch blast
+    impactCue: 1.0, // 100% full-power celebratory launch blast
   },
   fades: {
     standardMs: 800,
@@ -505,22 +505,8 @@ export class CeremonyAudio {
           osc.start(now + idx * 0.08);
           osc.stop(now + 1.3);
         });
-      } else if (cue === "impact" || cue === "opening") {
-        // Futuristic chord sweep in gold harmony
-        const freqs = [220, 277.18, 329.63, 440, 554.37, 659.25];
-        freqs.forEach((freq, idx) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = idx % 2 === 0 ? "triangle" : "sine";
-          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-          gain.gain.setValueAtTime(0.12, now + idx * 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + idx * 0.04);
-          osc.stop(now + 2.3);
-        });
       }
+      // Note: "impact" and "opening" use the dedicated /audio/placeholders/opening.mp3 asset directly without synthetic overlay.
     } catch {
       // Audio synthesis is non-blocking and best-effort
     }
