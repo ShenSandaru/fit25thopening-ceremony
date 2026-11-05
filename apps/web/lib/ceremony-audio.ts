@@ -1,0 +1,220 @@
+import { countdownCueDelays } from "./ceremony-sync";
+
+/**
+ * Local placeholder tones. They are not official FIT Expo audio.
+ * Missing or blocked playback is recorded and never stops the visual sequence.
+ */
+export const PLACEHOLDER_AUDIO = {
+  ambient: "/audio/placeholders/ambient.wav",
+  activation: "/audio/placeholders/activation.wav",
+  countdown: "/audio/placeholders/countdown.wav",
+  opening: "/audio/placeholders/opening.wav",
+  voiceover: "/audio/placeholders/voiceover.wav",
+} as const;
+
+export type CueName = keyof typeof PLACEHOLDER_AUDIO;
+
+type AudioLike = {
+  src: string;
+  loop: boolean;
+  volume: number;
+  preload: string;
+  currentTime: number;
+  play: () => Promise<void>;
+  pause: () => void;
+  addEventListener: (type: string, listener: () => void) => void;
+};
+
+export type AudioFactory = (src: string) => AudioLike;
+
+export class CeremonyAudio {
+  private readonly factory: AudioFactory;
+  private readonly clips = new Map<CueName, AudioLike>();
+  private readonly timers: ReturnType<typeof setTimeout>[] = [];
+  private audioCtx: AudioContext | null = null;
+  private unlocked = false;
+  unavailable = false;
+  onChange: (() => void) | null = null;
+
+  constructor(factory: AudioFactory = defaultFactory) {
+    this.factory = factory;
+  }
+
+  preload(): void {
+    for (const [name, src] of Object.entries(PLACEHOLDER_AUDIO) as [CueName, string][]) {
+      try {
+        const clip = this.factory(src);
+        clip.preload = "auto";
+        clip.addEventListener("error", () => {
+          this.markUnavailable();
+        });
+        this.clips.set(name, clip);
+      } catch {
+        this.markUnavailable();
+      }
+    }
+  }
+
+  async unlock(): Promise<void> {
+    this.unlocked = true;
+    this.initAudioContext();
+    const ambient = this.clips.get("ambient");
+    if (!ambient) {
+      this.markUnavailable();
+      return;
+    }
+    ambient.loop = true;
+    ambient.volume = 0.2;
+    try {
+      await ambient.play();
+    } catch {
+      this.markUnavailable();
+    }
+  }
+
+  play(name: Exclude<CueName, "ambient">): void {
+    if (!this.unlocked) {
+      return;
+    }
+    this.playSynthesizedCue(name);
+    const clip = this.clips.get(name);
+    if (!clip) {
+      this.markUnavailable();
+      return;
+    }
+    try {
+      clip.loop = false;
+      clip.currentTime = 0;
+      void clip.play().catch(() => {
+        this.markUnavailable();
+      });
+    } catch {
+      this.markUnavailable();
+    }
+  }
+
+  scheduleCountdown(startsAt: number, durationMs: number, now: number): void {
+    this.clearTimers();
+    for (const delay of countdownCueDelays(startsAt, durationMs, now)) {
+      this.timers.push(setTimeout(() => this.play("countdown"), delay));
+    }
+  }
+
+  stop(): void {
+    this.clearTimers();
+    for (const clip of this.clips.values()) {
+      try {
+        clip.pause();
+      } catch {
+        this.markUnavailable();
+      }
+    }
+  }
+
+  private initAudioContext(): AudioContext | null {
+    if (typeof window === "undefined") {
+      return null;
+    }
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) {
+        return null;
+      }
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioCtx();
+      }
+      if (this.audioCtx.state === "suspended") {
+        void this.audioCtx.resume().catch(() => undefined);
+      }
+      return this.audioCtx;
+    } catch {
+      return null;
+    }
+  }
+
+  private playSynthesizedCue(cue: Exclude<CueName, "ambient">): void {
+    const ctx = this.initAudioContext();
+    if (!ctx) {
+      return;
+    }
+    try {
+      const now = ctx.currentTime;
+      if (cue === "activation") {
+        // High-tech ascending laser chirp
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(420, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (cue === "countdown") {
+        // Deep sub-bass pulse with resonant attack
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + 0.35);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (cue === "voiceover") {
+        // Robotic harmonic chime for voiceover sequence
+        const freqs = [330, 440, 660];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + 1.3);
+        });
+      } else if (cue === "opening") {
+        // Futuristic chord sweep in gold harmony
+        const freqs = [220, 277.18, 329.63, 440, 554.37, 659.25];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = idx % 2 === 0 ? "triangle" : "sine";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.12, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + 2.3);
+        });
+      }
+    } catch {
+      // Audio synthesis is non-blocking and best-effort
+    }
+  }
+
+  private markUnavailable(): void {
+    this.unavailable = true;
+    this.onChange?.();
+  }
+
+  private clearTimers(): void {
+    for (const timer of this.timers.splice(0)) {
+      clearTimeout(timer);
+    }
+  }
+}
+
+function defaultFactory(src: string): AudioLike {
+  return new Audio(src);
+}

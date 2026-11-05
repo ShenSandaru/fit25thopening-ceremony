@@ -1,0 +1,35 @@
+{
+  "name": "fit-expo-opening",
+  "private": true,
+  "description": "Synchronized web-based opening ceremony for the FIT Expo, Faculty of Information Technology, University of Moratuwa",
+  "type": "module",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=12.4.0"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @fit-expo/shared build",
+    "dev": "pnpm build:shared && pnpm --recursive --parallel dev",
+    "dev:web": "pnpm build:shared && pnpm --filter @fit-expo/web dev",
+    "dev:server": "pnpm build:shared && pnpm --filter @fit-expo/server dev",
+    "build": "pnpm --recursive build",
+    "start:server": "pnpm --filter @fit-expo/server start",
+    "start:web": "pnpm --filter @fit-expo/web start",
+    "typecheck": "pnpm build:shared && pnpm --recursive typecheck",
+    "lint": "pnpm --recursive lint",
+    "test": "pnpm build:shared && pnpm --recursive test",
+    "test:e2e": "pnpm --filter @fit-expo/web test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}

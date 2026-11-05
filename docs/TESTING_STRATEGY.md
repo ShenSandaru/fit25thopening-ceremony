@@ -1,16 +1,16 @@
 # Testing Strategy
 
-> Status: Proposed. No test tooling is installed yet; it is set up in Phase 1 and Phase 2 (see [PLAN.md](../PLAN.md)). Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
+> Status: Phases 2–7 automated the ceremony state machine, device sessions, guest activation, display countdown recovery, admin lifecycle endpoints (prepare, start, abort, reset), tablet session release, live presence/activity stream, and E2E dashboard orchestration. Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. Test levels and tools (proposed)
 
-| Level | Tool | Scope |
-|---|---|---|
-| Unit | Vitest | State machine, `CeremonyService`, permission map, zod schemas, clock-offset maths, countdown rendering maths, audio cue scheduling logic |
-| Integration | Vitest + Supertest + `socket.io-client` | Real Express and Socket.IO server on an ephemeral port; auth, REST endpoints, socket events, broadcasts, reconnection |
-| End-to-end | Playwright | All five interfaces in real browsers against a real server, using multiple browser contexts for tablets, display and admin |
-| Real-device | Manual checklist | Actual tablets, display hardware and venue network during rehearsal |
-| Static | TypeScript (`strict`), ESLint | Every package, on every change (NFR-013) |
+| Level       | Tool                                    | Scope                                                                                                                                    |
+| ----------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest                                  | State machine, `CeremonyService`, permission map, zod schemas, clock-offset maths, countdown rendering maths, audio cue scheduling logic |
+| Integration | Vitest + Supertest + `socket.io-client` | Real Express and Socket.IO server on an ephemeral port; auth, REST endpoints, socket events, broadcasts, reconnection                    |
+| End-to-end  | Playwright                              | All five interfaces in real browsers against a real server, using multiple browser contexts for tablets, display and admin               |
+| Real-device | Manual checklist                        | Actual tablets, display hardware and venue network during rehearsal                                                                      |
+| Static      | TypeScript (`strict`), ESLint           | Every package, on every change (NFR-013)                                                                                                 |
 
 Principles:
 
@@ -21,22 +21,22 @@ Principles:
 
 ## 2. Core scenarios
 
-| ID | Scenario | Unit | Integration | E2E | Device | Requirements |
-|---|---|---|---|---|---|---|
-| TS-01 | One guest activates | Yes | Yes | Yes | Yes | FR-010, FR-011, FR-016, FR-020, FR-030 |
-| TS-02 | Two guests activate | Yes | Yes | Yes | | FR-016, FR-020, FR-042 |
-| TS-03 | All three guests activate | Yes | Yes | Yes | Yes | FR-020, FR-022, FR-023, FR-025, FR-026 |
-| TS-04 | Nearly simultaneous activations | Yes | Yes | | Yes | FR-021, NFR-004 |
-| TS-05 | Duplicate activation | Yes | Yes | Yes | | FR-014 |
-| TS-06 | Unauthorized activation | Yes | Yes | Yes | | FR-002, FR-003, FR-012, NFR-005 |
-| TS-07 | Tablet disconnection | | Yes | Yes | Yes | FR-011, FR-015, FR-043 |
-| TS-08 | Display refresh | | Yes | Yes | Yes | FR-031, FR-073 |
-| TS-09 | Backend disconnection | | Yes | Yes | Yes | FR-043, FR-071, FR-072, NFR-003 |
-| TS-10 | Admin reset | Yes | Yes | Yes | | FR-046 |
-| TS-11 | Admin abort | Yes | Yes | Yes | | FR-027, FR-030, FR-044 |
-| TS-12 | Audio unavailable | Yes | | Yes | Yes | FR-060, FR-061, FR-062, FR-063 |
-| TS-13 | Reconnection and state recovery | | Yes | Yes | Yes | FR-031, FR-051, FR-071, FR-073, NFR-003 |
-| TS-14 | Exactly-once countdown | Yes | Yes | | | FR-021, FR-025, NFR-004 |
+| ID    | Scenario                        | Unit | Integration | E2E | Device | Requirements                            |
+| ----- | ------------------------------- | ---- | ----------- | --- | ------ | --------------------------------------- |
+| TS-01 | One guest activates             | Yes  | Yes         | Yes | Yes    | FR-010, FR-011, FR-016, FR-020, FR-030  |
+| TS-02 | Two guests activate             | Yes  | Yes         | Yes |        | FR-016, FR-020, FR-042                  |
+| TS-03 | All three guests activate       | Yes  | Yes         | Yes | Yes    | FR-020, FR-022, FR-023, FR-025, FR-026  |
+| TS-04 | Nearly simultaneous activations | Yes  | Yes         |     | Yes    | FR-021, NFR-004                         |
+| TS-05 | Duplicate activation            | Yes  | Yes         | Yes |        | FR-014                                  |
+| TS-06 | Unauthorized activation         | Yes  | Yes         | Yes |        | FR-002, FR-003, FR-012, NFR-005         |
+| TS-07 | Tablet disconnection            |      | Yes         | Yes | Yes    | FR-011, FR-015, FR-043                  |
+| TS-08 | Display refresh                 |      | Yes         | Yes | Yes    | FR-031, FR-073                          |
+| TS-09 | Backend disconnection           |      | Yes         | Yes | Yes    | FR-043, FR-071, FR-072, NFR-003         |
+| TS-10 | Admin reset                     | Yes  | Yes         | Yes |        | FR-046                                  |
+| TS-11 | Admin abort                     | Yes  | Yes         | Yes |        | FR-027, FR-030, FR-044                  |
+| TS-12 | Audio unavailable               | Yes  |             | Yes | Yes    | FR-060, FR-061, FR-062, FR-063          |
+| TS-13 | Reconnection and state recovery |      | Yes         | Yes | Yes    | FR-031, FR-051, FR-071, FR-073, NFR-003 |
+| TS-14 | Exactly-once countdown          | Yes  | Yes         |     |        | FR-021, FR-025, NFR-004                 |
 
 ### TS-01: One guest activates
 
@@ -115,17 +115,17 @@ Principles:
 
 ## 3. Additional scenarios
 
-| ID | Scenario | Levels | Requirements |
-|---|---|---|---|
-| TS-15 | Every invalid state transition is rejected (exhaustive matrix of state x action) | Unit, Integration | FR-040, FR-041, FR-050 |
-| TS-16 | Activation outside `COLLECTING_ACTIVATIONS` is rejected; slider disabled in those states | Unit, Integration, E2E | FR-010, FR-013 |
-| TS-17 | Manual start: success path; wrong phrase; wrong password; non-admin; wrong state; rate limit; audit entries for all | Unit, Integration, E2E | FR-004, FR-045, FR-047, NFR-005, NFR-012 |
-| TS-18 | Countdown synchronization accuracy: clock offset estimate with simulated skew and latency; two browsers show digit changes within 100 ms | Unit, E2E, Device | FR-022, FR-024, NFR-002 |
-| TS-19 | Authentication flows and route access for all five roles; configurable server URL | Integration, E2E | FR-001, FR-002, FR-003, FR-004, FR-070 |
-| TS-20 | Rate limits on auth, admin and socket events | Integration | NFR-005 |
-| TS-21 | Accessibility: keyboard and screen-reader operation of slider alternative and admin; contrast; reduced motion; touch target sizes (automated axe checks plus manual) | E2E, Device | FR-017, NFR-007, NFR-008 |
-| TS-22 | Venue performance and endurance: latency, readability from the back of the venue, browser compatibility, 8-hour soak | Device | NFR-001, NFR-006, NFR-007, NFR-010, NFR-011 |
-| TS-23 | Offline assets: with internet blocked, all fonts, images and audio load | E2E, Device | NFR-009 |
+| ID    | Scenario                                                                                                                                                             | Levels                 | Requirements                                |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------- |
+| TS-15 | Every invalid state transition is rejected (exhaustive matrix of state x action)                                                                                     | Unit, Integration      | FR-040, FR-041, FR-050                      |
+| TS-16 | Activation outside `COLLECTING_ACTIVATIONS` is rejected; slider disabled in those states                                                                             | Unit, Integration, E2E | FR-010, FR-013                              |
+| TS-17 | Manual start: success path; wrong phrase; wrong password; non-admin; wrong state; rate limit; audit entries for all                                                  | Unit, Integration, E2E | FR-004, FR-045, FR-047, NFR-005, NFR-012    |
+| TS-18 | Countdown synchronization accuracy: clock offset estimate with simulated skew and latency; two browsers show digit changes within 100 ms                             | Unit, E2E, Device      | FR-022, FR-024, NFR-002                     |
+| TS-19 | Authentication flows and route access for all five roles; configurable server URL                                                                                    | Integration, E2E       | FR-001, FR-002, FR-003, FR-004, FR-070      |
+| TS-20 | Rate limits on auth, admin and socket events                                                                                                                         | Integration            | NFR-005                                     |
+| TS-21 | Accessibility: keyboard and screen-reader operation of slider alternative and admin; contrast; reduced motion; touch target sizes (automated axe checks plus manual) | E2E, Device            | FR-017, NFR-007, NFR-008                    |
+| TS-22 | Venue performance and endurance: latency, readability from the back of the venue, browser compatibility, 8-hour soak                                                 | Device                 | NFR-001, NFR-006, NFR-007, NFR-010, NFR-011 |
+| TS-23 | Offline assets: with internet blocked, all fonts, images and audio load                                                                                              | E2E, Device            | NFR-009                                     |
 
 ## 4. Expectations by level
 

@@ -4,11 +4,11 @@
 
 ## 1. Sources
 
-| Source | URL | Retrieved |
-|---|---|---|
-| Faculty of IT website (homepage HTML) | https://itfac.uom.ac.lk/ | 2026-11-05 |
-| Compiled stylesheet (Tailwind CSS v4 theme) | https://itfac.uom.ac.lk/assets/styles-C5vzmBWd.css | 2026-11-05 |
-| Font import in that stylesheet | `https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap` | 2026-11-05 |
+| Source                                      | URL                                                                                                                           | Retrieved  |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Faculty of IT website (homepage HTML)       | https://itfac.uom.ac.lk/                                                                                                      | 2026-11-05 |
+| Compiled stylesheet (Tailwind CSS v4 theme) | https://itfac.uom.ac.lk/assets/styles-C5vzmBWd.css                                                                            | 2026-11-05 |
+| Font import in that stylesheet              | `https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap` | 2026-11-05 |
 
 Method: the stylesheet's `@theme` custom properties were read directly, and the homepage markup was scanned to count how often each brand utility class is used. The asset filename contains a build hash and will change when the website is redeployed; re-check values if the site changes.
 
@@ -16,25 +16,25 @@ Method: the stylesheet's `@theme` custom properties were read directly, and the 
 
 ### Brand colours (extracted from website CSS)
 
-| Token (website name) | HEX | Role | Homepage usage | Status |
-|---|---|---|---|---|
-| `--color-navy-blue` | `#1b3a6b` | **Primary.** Headers, primary surfaces, borders, headings | 83 class uses | Extracted; UNVERIFIED against brand guide |
-| `--color-gold` | `#c9a227` | **Secondary / accent.** Highlights, dividers, emphasis, calls to action | 104 class uses | Extracted; UNVERIFIED against brand guide |
+| Token (website name) | HEX       | Role                                                                    | Homepage usage | Status                                    |
+| -------------------- | --------- | ----------------------------------------------------------------------- | -------------- | ----------------------------------------- |
+| `--color-navy-blue`  | `#1b3a6b` | **Primary.** Headers, primary surfaces, borders, headings               | 83 class uses  | Extracted; UNVERIFIED against brand guide |
+| `--color-gold`       | `#c9a227` | **Secondary / accent.** Highlights, dividers, emphasis, calls to action | 104 class uses | Extracted; UNVERIFIED against brand guide |
 
 ### Supporting colours (extracted from website CSS)
 
-| Token | HEX | Role | Homepage usage |
-|---|---|---|---|
-| `--color-light-grey` | `#e8e8e8` | Subtle backgrounds, dividers | 40 class uses |
-| `--color-dark-grey` | `#3a3a3a` | Body text on light backgrounds | 14 class uses |
-| `--color-light-blue-bg` | `#e3f2fd` | Tinted section backgrounds | 12 class uses |
-| `--color-accent-blue` | `#2196f3` | Occasional accent (links, info) | 2 class uses |
-| `--color-white` | `#ffffff` | Base background, text on navy | n/a |
-| `--color-black` | `#000000` | Rarely used | n/a |
+| Token                   | HEX       | Role                            | Homepage usage |
+| ----------------------- | --------- | ------------------------------- | -------------- |
+| `--color-light-grey`    | `#e8e8e8` | Subtle backgrounds, dividers    | 40 class uses  |
+| `--color-dark-grey`     | `#3a3a3a` | Body text on light backgrounds  | 14 class uses  |
+| `--color-light-blue-bg` | `#e3f2fd` | Tinted section backgrounds      | 12 class uses  |
+| `--color-accent-blue`   | `#2196f3` | Occasional accent (links, info) | 2 class uses   |
+| `--color-white`         | `#ffffff` | Base background, text on navy   | n/a            |
+| `--color-black`         | `#000000` | Rarely used                     | n/a            |
 
-### Proposed project tokens
+### Project tokens
 
-The web app will declare these in Tailwind CSS v4 `@theme`, keeping the website's names so values are traceable to the source. Do not add other brand colours without a documented source.
+Implemented in [`apps/web/app/brand-tokens.css`](../apps/web/app/brand-tokens.css), the single source of truth for brand tokens, using Tailwind CSS v4 `@theme`. The website's names are kept so values stay traceable to the source, which gives utilities such as `bg-navy-blue`, `text-gold` and `border-light-grey`. The same file maps `--font-heading` (Outfit) and `--font-sans` (Inter) to the `next/font` variables set in `apps/web/app/layout.tsx`. To change a colour, edit that file only. Do not add other brand colours without a documented source.
 
 ```css
 @theme {
@@ -53,21 +53,21 @@ Darker or lighter variants of navy or gold (for example, for gradients on the ma
 
 ### Contrast (calculated with WCAG 2.x relative luminance)
 
-| Foreground on background | Ratio (approx.) | Use |
-|---|---|---|
-| White on navy `#1b3a6b` | 11.3 : 1 | All text sizes |
-| Navy on white | 11.3 : 1 | All text sizes |
-| Dark grey `#3a3a3a` on white | 11.4 : 1 | Body text |
-| Gold `#c9a227` on navy | 4.7 : 1 | Normal and large text (AA) |
-| Gold on white | 2.4 : 1 | **Not allowed for text.** Decorative only |
-| White on accent blue `#2196f3` | 3.1 : 1 | Large or bold text only; avoid for body |
+| Foreground on background       | Ratio (approx.) | Use                                       |
+| ------------------------------ | --------------- | ----------------------------------------- |
+| White on navy `#1b3a6b`        | 11.3 : 1        | All text sizes                            |
+| Navy on white                  | 11.3 : 1        | All text sizes                            |
+| Dark grey `#3a3a3a` on white   | 11.4 : 1        | Body text                                 |
+| Gold `#c9a227` on navy         | 4.7 : 1         | Normal and large text (AA)                |
+| Gold on white                  | 2.4 : 1         | **Not allowed for text.** Decorative only |
+| White on accent blue `#2196f3` | 3.1 : 1         | Large or bold text only; avoid for body   |
 
 ## 3. Typography
 
-| Use | Family | Weights on website | Source |
-|---|---|---|---|
-| Headings (`--font-heading`) | **Outfit**, sans-serif | 400, 500, 600, 700, 800 | Website CSS |
-| Body (`--font-sans`) | **Inter**, ui-sans-serif, system-ui, sans-serif | 300, 400, 500, 600, 700 | Website CSS |
+| Use                         | Family                                          | Weights on website      | Source      |
+| --------------------------- | ----------------------------------------------- | ----------------------- | ----------- |
+| Headings (`--font-heading`) | **Outfit**, sans-serif                          | 400, 500, 600, 700, 800 | Website CSS |
+| Body (`--font-sans`)        | **Inter**, ui-sans-serif, system-ui, sans-serif | 300, 400, 500, 600, 700 | Website CSS |
 
 Rules:
 
@@ -78,11 +78,11 @@ Rules:
 
 ## 4. Logo usage
 
-| Asset | Source | Status |
-|---|---|---|
-| University of Moratuwa logo | Website header image `/assets/logo-B1akXfgP.png` (alt "UoM Logo") | Exists on website. **PENDING**: official high-resolution or vector file and usage permission |
-| Faculty of IT logo or wordmark | Not identified as a separate asset on the homepage | **PENDING** |
-| FIT Expo event mark | Not on the website | **PENDING**: from the organizing committee |
+| Asset                          | Source                                                            | Status                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| University of Moratuwa logo    | Website header image `/assets/logo-B1akXfgP.png` (alt "UoM Logo") | Exists on website. **PENDING**: official high-resolution or vector file and usage permission |
+| Faculty of IT logo or wordmark | Not identified as a separate asset on the homepage                | **PENDING**                                                                                  |
+| FIT Expo event mark            | Not on the website                                                | **PENDING**: from the organizing committee                                                   |
 
 Rules:
 
@@ -110,9 +110,12 @@ Rules:
   - Tablets: portrait and landscape, roughly 768 to 1366 CSS px wide. Final models **PENDING**.
   - Admin: laptop first (1280 px and up), usable on a tablet.
 
-## 7. Main display principles (`/display`)
+## 7. Main display principles (`/`)
+
+The display is the browser on the ceremony laptop. HDMI mirroring and an extended desktop both show that same window; the page does not choose a monitor or talk to the projector. The operator moves the window onto the projected screen, then uses the browser fullscreen control.
 
 - Premium, ceremonial look: deep navy fields, gold accents and fine gold rules, restrained use of white.
+- A 16:9 stage fills the browser viewport. Wider or taller windows keep the stage at 16:9 and letterbox the rest, so mirroring a 16:10 laptop and a 16:9 projector both stay readable.
 - One focal element per screen. Never show more than one primary message at a time.
 - Readable from the back of the venue (NFR-006): body text at least 48 px at 1080p; countdown numerals at least 40% of viewport height; headings in Outfit.
 - Three guest indicators during `COLLECTING_ACTIVATIONS`, showing role titles (names and titles from configuration, **PENDING** confirmation). An indicator lights up only after the server accepts that activation.
@@ -149,12 +152,12 @@ Rules:
 
 ## 11. Audio principles
 
-| Cue | Where | Trigger |
-|---|---|---|
-| Ambient music | Display | Loops in `WAITING`, `READY`, `COLLECTING_ACTIVATIONS` after audio is unlocked |
-| Activation sound effect | Display (optionally tablet) | `guest:activated` |
-| Countdown audio | Display | Scheduled from `startsAt` |
-| Final opening sound | Display | `event:opened` |
+| Cue                     | Where                       | Trigger                                                                       |
+| ----------------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| Ambient music           | Display                     | Loops in `WAITING`, `READY`, `COLLECTING_ACTIVATIONS` after audio is unlocked |
+| Activation sound effect | Display (optionally tablet) | `guest:activated`                                                             |
+| Countdown audio         | Display                     | Scheduled from `startsAt`                                                     |
+| Final opening sound     | Display                     | `event:opened`                                                                |
 
 - All audio files are locally hosted in `apps/web/public/audio/` and preloaded before `READY`. No streaming during the event.
 - Browsers block autoplay: the display shows an "Enable audio" control that an operator presses once during setup; the display then reports audio as unlocked (FR-061).

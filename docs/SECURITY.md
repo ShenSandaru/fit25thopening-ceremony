@@ -1,29 +1,42 @@
 # Security
 
-> Status: Proposed security design, not yet implemented. Contracts referenced here are defined in [API_SPECIFICATION.md](API_SPECIFICATION.md).
+> Status: Guest access uses **device sessions** with HMAC-signed HttpOnly cookies assigned on `/guest`. The Admin Dashboard (`/admin`) is directly accessible without password authentication to provide a clean, non-overengineered operational console for trusted organizers during the live event. Guest activations remain strictly session-validated, and unauthenticated/admin sockets are forbidden from triggering activations.
 
 ## 1. Threat model (summary)
 
 The system runs on a venue network for a single live event. Realistic risks:
 
-- Someone on the same network opens a guest or admin URL and tries to activate, start, or abort the ceremony.
+- Someone on the same network opens a guest URL and tries to activate without the tablet.
 - A guest tablet is left unattended or its page is copied to another device.
 - A misbehaving or duplicated client sends repeated or forged requests.
 - Secrets leak through the repository, client bundles, screenshots, or logs.
 - The network is shared (for example, university Wi-Fi) and traffic may be observable.
 
-Goal: no one can trigger, block, or fake any ceremony step without the right credential, and the server rejects anything that does not follow the state machine.
+Goal: no one can trigger or fake guest activations without an assigned device session, and the server strictly rejects anything that violates the ceremony state machine.
+
+### Authentication and Access Boundaries
+
+| Surface                                              | Access Control & Enforcement                                                                                                                          |
+| :--------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/health`                                    | Public reachability check (non-secret).                                                                                                               |
+| `GET /api/event/state`                               | Session-authenticated or development/test inspection.                                                                                                 |
+| `POST /api/event/prepare`, `start`, `abort`, `reset` | Direct REST admin operations for trusted event console. Transitions validated by `CeremonyService`.                                                   |
+| `GET /api/event/activity`, `GET /api/devices/status` | Read-only telemetry for the organizer console.                                                                                                        |
+| `POST /api/guest-sessions/assign`                    | Rate-limited tablet role assignment. Enforces 1 active tablet per role.                                                                               |
+| `POST /api/guest-sessions/release-role`              | Organizer tablet release. Blocked if the guest has already activated in current run.                                                                  |
+| Socket.IO connection                                 | Requires session cookie or `auth: { role: "admin" }` read-only subscription. Sockets without credentials or admin role are rejected (`UNAUTHORIZED`). |
+| `guest:activate` event                               | Strictly requires authenticated guest session (`chief`, `vice-chancellor`, `dean`). Admin and display sockets are rejected (`FORBIDDEN`).             |
 
 ## 2. Roles and permissions (RBAC)
 
-| Action | chief | vice-chancellor | dean | display | admin |
-|---|---|---|---|---|---|
-| Read state (`GET /api/event/state`, `event:state`) | Yes | Yes | Yes | Yes | Yes |
-| `clock:sync` | Yes | Yes | Yes | Yes | Yes |
-| `guest:activate` (own role only, implicit) | Yes | Yes | Yes | No | No |
-| Prepare, start, abort, reset | No | No | No | No | Yes |
-| Manual start (with password re-entry) | No | No | No | No | Yes |
-| Read activity log, `device:status`, `activity:logged` | No | No | No | No | Yes |
+| Action                                                | chief | vice-chancellor | dean | display | admin |
+| ----------------------------------------------------- | ----- | --------------- | ---- | ------- | ----- |
+| Read state (`GET /api/event/state`, `event:state`)    | Yes   | Yes             | Yes  | Yes     | Yes   |
+| `clock:sync`                                          | Yes   | Yes             | Yes  | Yes     | Yes   |
+| `guest:activate` (own role only, implicit)            | Yes   | Yes             | Yes  | No      | No    |
+| Prepare, start, abort, reset                          | No    | No              | No   | No      | Yes   |
+| Manual start (with password re-entry)                 | No    | No              | No   | No      | Yes   |
+| Read activity log, `device:status`, `activity:logged` | No    | No              | No   | No      | Yes   |
 
 Rules:
 
@@ -68,13 +81,13 @@ Rules:
 
 ## 7. Rate limiting
 
-| Target | Proposed limit | Key |
-|---|---|---|
-| `POST /api/auth/*` | 10 requests per minute | Client IP |
-| `POST /api/event/manual-start` | 5 requests per 5 minutes | Session |
-| Other admin `POST /api/event/*` | 30 requests per minute | Session |
-| `guest:activate` | 5 events per 10 seconds | Socket |
-| `clock:sync` | 20 events per 10 seconds | Socket |
+| Target                          | Proposed limit           | Key       |
+| ------------------------------- | ------------------------ | --------- |
+| `POST /api/auth/*`              | 10 requests per minute   | Client IP |
+| `POST /api/event/manual-start`  | 5 requests per 5 minutes | Session   |
+| Other admin `POST /api/event/*` | 30 requests per minute   | Session   |
+| `guest:activate`                | 5 events per 10 seconds  | Socket    |
+| `clock:sync`                    | 20 events per 10 seconds | Socket    |
 
 Exceeding a limit returns `RATE_LIMITED`. Limits are configuration, tuned during rehearsal so that legitimate use is never blocked. Library choice (for example, `express-rate-limit` for REST, a small in-process counter for sockets) is decided in Phase 8.
 
@@ -116,11 +129,11 @@ Every attempt, successful or not, is written to the activity log with timestamp,
 
 The venue network is **PENDING**. Implications by option:
 
-| Option | Consideration |
-|---|---|
+| Option                    | Consideration                                                                                                                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Existing university Wi-Fi | Shared with other users; client isolation may block device-to-server traffic; captive portals may interfere. Prefer HTTPS if feasible; strong credentials are mandatory. Verify ports are reachable during the venue survey. |
-| Dedicated local router | Smaller attack surface. Use WPA2/WPA3 with a strong passphrase; hide from the public; disable WAN if not needed. HTTP may be acceptable on an isolated network but HTTPS is still preferred. |
-| Other arrangement | Evaluate against the same criteria: isolation, reachability, stability, ability to fix IP addresses. |
+| Dedicated local router    | Smaller attack surface. Use WPA2/WPA3 with a strong passphrase; hide from the public; disable WAN if not needed. HTTP may be acceptable on an isolated network but HTTPS is still preferred.                                 |
+| Other arrangement         | Evaluate against the same criteria: isolation, reachability, stability, ability to fix IP addresses.                                                                                                                         |
 
 General rules:
 
