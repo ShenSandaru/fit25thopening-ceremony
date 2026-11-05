@@ -9,7 +9,7 @@ type SlideToActivateProps = {
   onActivate: () => void;
 };
 
-const THRESHOLD = 0.9;
+const THRESHOLD = 0.78;
 
 export function SlideToActivate({
   disabled,
@@ -21,6 +21,8 @@ export function SlideToActivate({
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragging = useRef(false);
+  const progressRef = useRef(0);
+  const triggeredRef = useRef(false);
 
   function ratio(clientX: number): number {
     const track = trackRef.current;
@@ -33,59 +35,121 @@ export function SlideToActivate({
     return Math.min(1, Math.max(0, (clientX - rect.left - thumb / 2) / usable));
   }
 
-  function finish(value: number) {
-    dragging.current = false;
-    setIsDragging(false);
-    if (!disabled && !busy && value >= THRESHOLD) {
-      setProgress(1);
-      onActivate();
+  function updateDrag(clientX: number) {
+    if (!dragging.current || disabled || busy || isActivated) {
       return;
     }
-    setProgress(0);
+    const next = ratio(clientX);
+    progressRef.current = next;
+    setProgress(next);
+
+    // Trigger immediately once the guest slides past the threshold for effortless mobile UX
+    if (next >= THRESHOLD && !triggeredRef.current) {
+      triggeredRef.current = true;
+      dragging.current = false;
+      setIsDragging(false);
+      progressRef.current = 1;
+      setProgress(1);
+      onActivate();
+    }
   }
 
-  const isNearlyUnlocked = progress >= 0.75;
+  function finish(clientX?: number) {
+    if (!dragging.current) {
+      return;
+    }
+    dragging.current = false;
+    setIsDragging(false);
+    const finalValue =
+      clientX !== undefined ? Math.max(progressRef.current, ratio(clientX)) : progressRef.current;
+    if (!disabled && !busy && !isActivated && finalValue >= THRESHOLD) {
+      if (!triggeredRef.current) {
+        triggeredRef.current = true;
+        progressRef.current = 1;
+        setProgress(1);
+        onActivate();
+      }
+      return;
+    }
+    if (!isActivated) {
+      progressRef.current = 0;
+      setProgress(0);
+    }
+  }
+
+  const displayProgress = isActivated || busy ? 1 : progress;
+  const isNearlyUnlocked = displayProgress >= 0.65;
 
   return (
     <div className="w-full max-w-xl">
       {/* Tactile Holographic Slide Track */}
       <div
         ref={trackRef}
-        className={`relative h-22 overflow-hidden rounded-full border-2 transition-all duration-300 select-none ${
-          disabled
-            ? "border-slate-700/60 bg-slate-900/60 opacity-60 cursor-not-allowed"
-            : busy
-              ? "border-gold/80 bg-navy-blue shadow-[0_0_25px_rgba(201,162,39,0.3)] cursor-wait"
-              : isNearlyUnlocked
-                ? "border-gold bg-navy-blue shadow-[0_0_30px_rgba(201,162,39,0.4)] cursor-grab active:cursor-grabbing"
-                : "border-cyan-500/50 bg-navy-blue/90 shadow-[0_0_20px_rgba(0,240,255,0.2)] cursor-grab active:cursor-grabbing"
+        style={{ touchAction: "none", WebkitUserSelect: "none" }}
+        className={`relative h-22 overflow-hidden rounded-full border-2 transition-colors duration-300 select-none touch-none ${
+          isActivated
+            ? "border-gold bg-navy-blue shadow-[0_0_30px_rgba(201,162,39,0.45)]"
+            : disabled
+              ? "border-slate-700/60 bg-slate-900/60 opacity-60 cursor-not-allowed"
+              : busy
+                ? "border-gold/80 bg-navy-blue shadow-[0_0_25px_rgba(201,162,39,0.3)] cursor-wait"
+                : isNearlyUnlocked
+                  ? "border-gold bg-navy-blue shadow-[0_0_30px_rgba(201,162,39,0.4)] cursor-grab active:cursor-grabbing"
+                  : "border-cyan-500/50 bg-navy-blue/90 shadow-[0_0_20px_rgba(0,240,255,0.2)] cursor-grab active:cursor-grabbing"
         }`}
         onPointerDown={(event) => {
-          if (disabled || busy) {
+          if (disabled || busy || isActivated) {
             return;
           }
+          triggeredRef.current = false;
           dragging.current = true;
           setIsDragging(true);
-          event.currentTarget.setPointerCapture(event.pointerId);
-          setProgress(ratio(event.clientX));
+          try {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          } catch {
+            // Some mobile browsers do not support pointer capture on touch; touch handlers cover it
+          }
+          updateDrag(event.clientX);
         }}
         onPointerMove={(event) => {
-          if (!dragging.current) {
+          updateDrag(event.clientX);
+        }}
+        onPointerUp={(event) => finish(event.clientX)}
+        onPointerCancel={() => finish()}
+        onTouchStart={(event) => {
+          if (disabled || busy || isActivated) {
             return;
           }
-          setProgress(ratio(event.clientX));
+          const touch = event.touches[0];
+          if (!touch) {
+            return;
+          }
+          triggeredRef.current = false;
+          dragging.current = true;
+          setIsDragging(true);
+          updateDrag(touch.clientX);
         }}
-        onPointerUp={(event) => finish(ratio(event.clientX))}
-        onPointerCancel={() => finish(0)}
+        onTouchMove={(event) => {
+          const touch = event.touches[0];
+          if (!touch) {
+            return;
+          }
+          updateDrag(touch.clientX);
+        }}
+        onTouchEnd={(event) => {
+          const touch = event.changedTouches[0];
+          finish(touch?.clientX);
+        }}
+        onTouchCancel={() => finish()}
       >
         {/* Dynamic Energy Fill Bar */}
         <div
-          className={`absolute inset-y-0 left-0 transition-all duration-75 ${
+          className={`absolute inset-y-0 left-0 ${isDragging ? "" : "transition-all duration-150"} ${
             isNearlyUnlocked
               ? "bg-gradient-to-r from-cyan-500/30 via-gold/40 to-gold/70"
               : "bg-gradient-to-r from-cyan-600/20 to-cyan-400/40"
           }`}
-          style={{ width: `${progress * 100}%` }}
+          style={{ width: `${displayProgress * 100}%` }}
         />
 
         {/* Laser Sweep Beam behind thumb */}
@@ -93,43 +157,51 @@ export function SlideToActivate({
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 w-2 bg-white shadow-[0_0_12px_#ffffff] animate-pulse"
-            style={{ left: `calc(1rem + ${progress} * (100% - 5.5rem))` }}
+            style={{ left: `calc(1rem + ${displayProgress} * (100% - 5.5rem))` }}
           />
         )}
 
         {/* Track Guidance Text */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-16">
           <p
-            className={`font-mono text-xs sm:text-sm font-bold tracking-[0.25em] uppercase transition-colors ${
-              disabled
-                ? "text-slate-500"
-                : busy
-                  ? "text-gold animate-pulse"
-                  : isNearlyUnlocked
-                    ? "text-gold drop-shadow-[0_0_8px_#c9a227]"
-                    : "text-cyan-300/90"
+            className={`font-mono text-xs sm:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-colors ${
+              isActivated
+                ? "text-gold drop-shadow-[0_0_8px_#c9a227]"
+                : disabled
+                  ? "text-slate-500"
+                  : busy
+                    ? "text-gold animate-pulse"
+                    : isNearlyUnlocked
+                      ? "text-gold drop-shadow-[0_0_8px_#c9a227]"
+                      : "text-cyan-300/90"
             }`}
           >
-            {busy
-              ? "TRANSMITTING BIOMETRIC SIGNAL…"
-              : disabled
-                ? "AWAITING CEREMONY START"
-                : "SLIDE TO ACTIVATE BIOMETRIC LOCK >>>"}
+            {isActivated
+              ? "BIOMETRIC SIGNAL LOCKED ✓"
+              : busy
+                ? "TRANSMITTING BIOMETRIC SIGNAL…"
+                : disabled
+                  ? "AWAITING CEREMONY START"
+                  : "SLIDE TO ACTIVATE BIOMETRIC LOCK >>>"}
           </p>
         </div>
 
         {/* Interactive Holographic Thumb */}
         <div
-          className={`absolute top-2 flex size-18 items-center justify-center rounded-full border-2 transition-transform duration-75 ${
-            disabled
-              ? "border-slate-600 bg-slate-800 text-slate-500 shadow"
-              : busy
-                ? "border-gold bg-gold text-navy-blue shadow-[0_0_20px_#c9a227] animate-pulse"
-                : isNearlyUnlocked
-                  ? "border-white bg-gold text-navy-blue shadow-[0_0_25px_#c9a227] scale-105"
-                  : "border-cyan-300 bg-cyan-500 text-navy-blue shadow-[0_0_20px_rgba(0,240,255,0.7)]"
+          className={`pointer-events-none absolute top-2 flex size-18 items-center justify-center rounded-full border-2 ${
+            isDragging ? "" : "transition-all duration-150"
+          } ${
+            isActivated
+              ? "border-white bg-gold text-navy-blue shadow-[0_0_25px_#c9a227]"
+              : disabled
+                ? "border-slate-600 bg-slate-800 text-slate-500 shadow"
+                : busy
+                  ? "border-gold bg-gold text-navy-blue shadow-[0_0_20px_#c9a227] animate-pulse"
+                  : isNearlyUnlocked
+                    ? "border-white bg-gold text-navy-blue shadow-[0_0_25px_#c9a227] scale-105"
+                    : "border-cyan-300 bg-cyan-500 text-navy-blue shadow-[0_0_20px_rgba(0,240,255,0.7)]"
           }`}
-          style={{ left: `calc(0.4rem + ${progress} * (100% - 5rem))` }}
+          style={{ left: `calc(0.4rem + ${displayProgress} * (100% - 5rem))` }}
           aria-hidden="true"
         >
           {/* Authentic Holographic Biometric Fingerprint Glyph */}
