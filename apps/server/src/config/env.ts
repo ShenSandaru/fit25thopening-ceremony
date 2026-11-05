@@ -47,7 +47,7 @@ export const DEFAULT_SESSION_RECONNECT_GRACE_MS = 60_000;
 
 const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  HOST: z.string().trim().min(1).default("0.0.0.0"),
+  HOST: z.string().trim().min(1).default("::"),
   PORT: z.coerce.number().int().min(1).max(65535).default(DEFAULT_SERVER_PORT),
   CORS_ORIGINS: corsOriginsSchema,
   SESSION_SECRET: sessionSecretSchema,

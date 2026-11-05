@@ -123,6 +123,7 @@ export class GuestSessionService {
       lastSeenAt: null,
     };
     this.sessions.set(session.id, session);
+    this.scheduleGraceRelease(session.id);
     return session;
   }
 
@@ -187,15 +188,7 @@ export class GuestSessionService {
     session.status = "DISCONNECTED";
     session.disconnectedAt = this.clock.now();
     session.lastSeenAt = session.disconnectedAt;
-    this.clearGrace(sessionId);
-    const timer = this.clock.setTimeout(() => {
-      this.graceTimers.delete(sessionId);
-      const current = this.sessions.get(sessionId);
-      if (current && current.status === "DISCONNECTED") {
-        current.status = "RELEASED";
-      }
-    }, this.reconnectGraceMs);
-    this.graceTimers.set(sessionId, timer);
+    this.scheduleGraceRelease(sessionId);
   }
 
   presence(): DeviceStatus[] {
@@ -326,6 +319,18 @@ export class GuestSessionService {
         this.clearGrace(session.id);
       }
     }
+  }
+
+  private scheduleGraceRelease(sessionId: string): void {
+    this.clearGrace(sessionId);
+    const timer = this.clock.setTimeout(() => {
+      this.graceTimers.delete(sessionId);
+      const current = this.sessions.get(sessionId);
+      if (current && (current.status === "DISCONNECTED" || current.status === "ASSIGNED")) {
+        current.status = "RELEASED";
+      }
+    }, this.reconnectGraceMs);
+    this.graceTimers.set(sessionId, timer);
   }
 
   private clearGrace(sessionId: string): void {

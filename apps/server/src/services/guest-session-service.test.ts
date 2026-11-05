@@ -139,4 +139,14 @@ describe("GuestSessionService", () => {
     const cookie = `fit_expo_session=${sessions.sign(chief.id)}`;
     expect(() => sessions.claimDisplay(cookie)).toThrow(DomainError);
   });
+
+  it("releases an assigned display session if it never connects within the grace period", () => {
+    const { sessions, advance } = service(1_000);
+    const first = sessions.claimDisplay(undefined);
+    expect(() => sessions.claimDisplay(undefined)).toThrow(DomainError);
+    advance(1_000);
+    const second = sessions.claimDisplay(undefined);
+    expect(second.id).not.toBe(first.id);
+    expect(second.role).toBe("display");
+  });
 });

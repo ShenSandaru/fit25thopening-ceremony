@@ -34,25 +34,40 @@ export function CeremonyDisplay() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetch("/api/display-sessions/claim", { method: "POST", credentials: "include" })
-      .then(async (response) => {
-        if (cancelled) {
-          return;
-        }
-        if (response.ok) {
-          setClaim("ready");
-          return;
-        }
-        const body = (await response.json()) as { error?: { message?: string } };
-        setClaim(body.error?.message?.includes("guest") ? "guest-browser" : "taken");
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setClaim("taken");
-        }
-      });
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+    function claimSession() {
+      void fetch("/api/display-sessions/claim", { method: "POST", credentials: "include" })
+        .then(async (response) => {
+          if (cancelled) {
+            return;
+          }
+          if (response.ok) {
+            setClaim("ready");
+            return;
+          }
+          if (response.status === 403) {
+            const body = (await response.json().catch(() => ({}))) as {
+              error?: { message?: string };
+            };
+            setClaim(body.error?.message?.includes("guest") ? "guest-browser" : "taken");
+            return;
+          }
+          retryTimer = setTimeout(claimSession, 2000);
+        })
+        .catch(() => {
+          if (!cancelled) {
+            retryTimer = setTimeout(claimSession, 2000);
+          }
+        });
+    }
+
+    claimSession();
     return () => {
       cancelled = true;
+      if (retryTimer !== undefined) {
+        clearTimeout(retryTimer);
+      }
     };
   }, []);
 

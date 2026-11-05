@@ -10,7 +10,7 @@ describe("parseServerEnv", () => {
   it("applies documented defaults when optional variables are absent", () => {
     expect(parseServerEnv(validBase)).toEqual({
       NODE_ENV: "development",
-      HOST: "0.0.0.0",
+      HOST: "::",
       PORT: 4000,
       CORS_ORIGINS: ["http://localhost:3000"],
       SESSION_SECRET: "a".repeat(32),
