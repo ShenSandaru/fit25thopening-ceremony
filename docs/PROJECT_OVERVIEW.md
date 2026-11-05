@@ -1,6 +1,6 @@
 # Project Overview
 
-> Status: Foundation documentation. No application code exists yet. See [PLAN.md](../PLAN.md) for the roadmap.
+> Status: Monorepo scaffold in place (Phase 1). No ceremony functionality is implemented yet. See [PLAN.md](../PLAN.md) for the roadmap.
 
 ## 1. Purpose
 
@@ -19,13 +19,13 @@ A ceremonial "joint opening" needs to feel simultaneous and reliable in front of
 
 ## 3. User roles
 
-| Role ID | Person | Device | Interface |
-|---|---|---|---|
-| `chief` | Chief Guest | Tablet | `/guest/chief` |
-| `vice-chancellor` | Vice Chancellor | Tablet | `/guest/vice-chancellor` |
-| `dean` | Dean, Faculty of IT | Tablet | `/guest/dean` |
-| `display` | Audience (no direct operator) | Large screen / projector | `/display` |
-| `admin` | Event organizer / technical operator | Laptop or tablet | `/admin` |
+| Role ID           | Person                               | Device                   | Interface                |
+| ----------------- | ------------------------------------ | ------------------------ | ------------------------ |
+| `chief`           | Chief Guest                          | Tablet                   | `/guest/chief`           |
+| `vice-chancellor` | Vice Chancellor                      | Tablet                   | `/guest/vice-chancellor` |
+| `dean`            | Dean, Faculty of IT                  | Tablet                   | `/guest/dean`            |
+| `display`         | Audience (no direct operator)        | Large screen / projector | `/display`               |
+| `admin`           | Event organizer / technical operator | Laptop or tablet         | `/admin`                 |
 
 The three guest roles are collectively called **guests**. Guest display names and titles are configuration, not code, and are still to be confirmed (see [PLAN.md](../PLAN.md), open decisions).
 

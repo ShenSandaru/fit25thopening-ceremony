@@ -25,13 +25,13 @@ If a requirement is ambiguous or conflicts with these documents, stop and ask ra
 
 A synchronized, web-based opening ceremony. Three guests (Chief Guest, Vice Chancellor, Dean of IT) each slide to activate on their own tablet. Only after the **server** has accepted all three activations does it start a 5-second countdown; the main display then plays the opening animation and shows the official FIT Expo opening screen. An admin dashboard lets organizers control and monitor the ceremony.
 
-| Interface | Route | Role |
-|---|---|---|
-| Main Display | `/display` | `display` |
-| Chief Guest tablet | `/guest/chief` | `chief` |
+| Interface              | Route                    | Role              |
+| ---------------------- | ------------------------ | ----------------- |
+| Main Display           | `/display`               | `display`         |
+| Chief Guest tablet     | `/guest/chief`           | `chief`           |
 | Vice Chancellor tablet | `/guest/vice-chancellor` | `vice-chancellor` |
-| Dean of IT tablet | `/guest/dean` | `dean` |
-| Admin Dashboard | `/admin` | `admin` |
+| Dean of IT tablet      | `/guest/dean`            | `dean`            |
+| Admin Dashboard        | `/admin`                 | `admin`           |
 
 Business rule: the countdown starts only when `chief`, `vice-chancellor` and `dean` all have server-accepted activations, or after an authorized emergency manual start.
 
@@ -39,18 +39,52 @@ This is **purely web-based**. There is no hardware, door control, IoT, or physic
 
 ## 2. Technology stack
 
-| Area | Technology |
-|---|---|
-| Language | TypeScript everywhere (`strict: true`) |
-| Package manager | pnpm workspaces |
-| Frontend | Next.js (App Router), React, Tailwind CSS v4, Motion, Socket.IO client |
-| Backend | Node.js, Express, Socket.IO |
-| Shared | `packages/shared`: types, constants, event names, zod schemas |
-| Validation | zod (shared between web and server) |
-| Testing | Vitest, Supertest, socket.io-client, Playwright |
-| Database | None. PostgreSQL only if a documented decision requires persistence |
+| Area            | Technology                                                             |
+| --------------- | ---------------------------------------------------------------------- |
+| Language        | TypeScript everywhere (`strict: true`)                                 |
+| Package manager | pnpm workspaces                                                        |
+| Frontend        | Next.js (App Router), React, Tailwind CSS v4, Motion, Socket.IO client |
+| Backend         | Node.js, Express, Socket.IO                                            |
+| Shared          | `packages/shared`: types, constants, event names, zod schemas          |
+| Validation      | zod (shared between web and server)                                    |
+| Testing         | Vitest, Supertest, socket.io-client, Playwright                        |
+| Lint and format | ESLint (flat config), typescript-eslint, eslint-config-next, Prettier  |
+| Database        | None. PostgreSQL only if a documented decision requires persistence    |
 
 Do not swap any of these without updating this file and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) with the justification.
+
+### Installed versions and pins
+
+| Tool                                | Version                | Why pinned                                                                                              |
+| ----------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| Node.js                             | 24.x (`>=24`)          | `engines` in root `package.json`                                                                        |
+| pnpm                                | 12.4.2                 | `packageManager` in root `package.json`                                                                 |
+| TypeScript                          | `~6.0.3`               | typescript-eslint supports `<6.1`; do not upgrade to TypeScript 7 until it does                         |
+| ESLint                              | `^9.39`                | eslint-config-next plugins (react, jsx-a11y, import) do not yet support ESLint 10; upgrade when they do |
+| Next.js / React                     | 16.4 / 19.3            |                                                                                                         |
+| Tailwind CSS                        | 4.3                    |                                                                                                         |
+| Express / zod / Vitest / Playwright | 5.3 / 4.6 / 5.1 / 1.64 |                                                                                                         |
+
+Packages not yet installed because their phase has not started: `socket.io` and `socket.io-client` (Phase 2 to 4), `motion` (Phase 6), `supertest` (Phase 2 integration tests). Add each one only in the phase that uses it.
+
+Dependency build scripts are blocked by pnpm by default. Approved exceptions live under `allowBuilds` in `pnpm-workspace.yaml` (currently only `esbuild`, needed by `tsx`). Approve a new one only when it is required and explain why.
+
+### Commands
+
+Run from the repository root:
+
+| Command                             | Purpose                                                              |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `pnpm install`                      | Install all workspace dependencies                                   |
+| `pnpm dev`                          | Build shared, then run shared (watch), server and web in parallel    |
+| `pnpm dev:web` / `pnpm dev:server`  | Run one app (builds shared first)                                    |
+| `pnpm build`                        | Build all packages in dependency order                               |
+| `pnpm typecheck`                    | Build shared, then typecheck every package                           |
+| `pnpm lint`                         | ESLint in every package                                              |
+| `pnpm test`                         | Build shared, then run Vitest in every package                       |
+| `pnpm test:e2e`                     | Playwright against the web production build (run `pnpm build` first) |
+| `pnpm format` / `pnpm format:check` | Prettier write / check                                               |
+| `pnpm check`                        | Format check, lint, typecheck, test and build in one go              |
 
 ## 3. Architecture summary
 
@@ -64,14 +98,14 @@ Do not swap any of these without updating this file and [docs/ARCHITECTURE.md](d
 
 ## 4. Responsibilities
 
-| Concern | Backend | Frontend |
-|---|---|---|
-| Ceremony state and transitions | Owns | Renders only |
-| Identity and permissions | Verifies session, derives role | Shows login, never asserts identity |
-| Activation acceptance | Validates, records, rejects duplicates | Sends intent, waits for ack |
-| Countdown start and `OPENED` | Decides, timestamps, schedules | Renders from server timestamps |
-| Presence and activity log | Tracks | Admin displays |
-| Audio and animation | None | Plays in response to server events |
+| Concern                        | Backend                                | Frontend                            |
+| ------------------------------ | -------------------------------------- | ----------------------------------- |
+| Ceremony state and transitions | Owns                                   | Renders only                        |
+| Identity and permissions       | Verifies session, derives role         | Shows login, never asserts identity |
+| Activation acceptance          | Validates, records, rejects duplicates | Sends intent, waits for ack         |
+| Countdown start and `OPENED`   | Decides, timestamps, schedules         | Renders from server timestamps      |
+| Presence and activity log      | Tracks                                 | Admin displays                      |
+| Audio and animation            | None                                   | Plays in response to server events  |
 
 ## 5. Folder structure
 
@@ -82,7 +116,8 @@ apps/
     components/
       guest/ display/ admin/ shared/
     hooks/                # React hooks (socket, server clock, audio)
-    lib/                  # socket client, API client, env parsing, utilities
+    lib/                  # socket client, API client, env parsing (env.ts), utilities
+    e2e/                  # Playwright specs (*.spec.ts)
     public/
       audio/ images/ animations/
   server/                 # @fit-expo/server
@@ -104,37 +139,42 @@ docs/
 Rules:
 
 - Create folders only when adding real files. No empty placeholders or stub files.
+- Brand tokens and font variables live only in `apps/web/app/brand-tokens.css`.
+- `@fit-expo/shared` is compiled to `packages/shared/dist` (ESM JavaScript plus `.d.ts`). Apps import the compiled output through the package `exports`, so shared must be built before consumers are typechecked, tested or run; the root scripts do this. Never import from `packages/shared/src` directly.
+- Dependency direction: `apps/web` and `apps/server` may depend on `@fit-expo/shared`; shared depends on neither app, and the two apps never import each other.
+- Environment variables are parsed in exactly one module per app: `apps/server/src/config/env.ts` and `apps/web/lib/env.ts`. Do not read `process.env` elsewhere.
 - Route files in `app/` stay thin: compose components and hooks, no business logic.
 - Components are grouped by interface (`guest`, `display`, `admin`); anything used by two or more interfaces goes in `components/shared`.
 
 ## 6. Coding conventions
 
 - TypeScript strict mode; no `any` (use `unknown` and narrow). No `@ts-ignore` without a comment explaining the constraint.
-- ES modules everywhere.
+- ES modules everywhere (`"type": "module"` in every package). In `apps/server` and `packages/shared` (`NodeNext` resolution) relative imports must use the `.js` extension; `apps/web` uses bundler resolution and omits extensions.
+- Use `import type` for type-only imports (enforced by lint).
 - Small, single-purpose modules and components. If a component exceeds roughly 200 lines or mixes concerns, split it.
 - Pure functions for logic (state transitions, time maths) so they can be unit tested without I/O.
 - No business logic in UI components; put client logic in hooks or `lib/`, server logic in services.
 - Prefer composition over inheritance; avoid premature abstraction (no generic "framework" layers).
 - Use `async`/`await`; never leave a promise unhandled.
-- Format and lint with the repository's configured tools (set up in Phase 1). Do not reformat unrelated code.
+- Format with Prettier (`pnpm format`; config in `.prettierrc.json`, LF line endings, enforced for git by `.gitattributes`) and lint with `pnpm lint`. Do not reformat unrelated code. On Windows, editors and tools may write CRLF; run `pnpm format` before `pnpm format:check`.
 - Comments explain constraints the code cannot express, not what the next line does.
 
 ## 7. Naming conventions
 
-| Item | Convention | Example |
-|---|---|---|
-| Files (TS modules) | kebab-case | `ceremony-service.ts`, `use-server-clock.ts` |
-| React component files | PascalCase | `SlideToActivate.tsx` |
-| React components, classes, types | PascalCase | `CeremonyState`, `GuestStatusCard` |
-| Functions, variables | camelCase | `computeRemainingMs` |
-| Hooks | `use` prefix | `useCeremonySocket` |
-| Constants | UPPER_SNAKE_CASE | `DEFAULT_COUNTDOWN_DURATION_MS` |
-| Ceremony states, error codes | UPPER_SNAKE_CASE string literals | `COLLECTING_ACTIVATIONS`, `ALREADY_ACTIVATED` |
-| Role IDs | kebab-case string literals | `chief`, `vice-chancellor`, `dean`, `display`, `admin` |
-| Socket events | `domain:action`, kebab-case action | `guest:activate`, `event:countdown-started` |
-| REST paths | lowercase kebab-case | `/api/event/manual-start` |
-| Environment variables | UPPER_SNAKE_CASE; browser-exposed ones start with `NEXT_PUBLIC_` | `SESSION_SECRET`, `NEXT_PUBLIC_SERVER_URL` |
-| Tests | `*.test.ts` next to the code; E2E in `apps/web/e2e/*.spec.ts` | `ceremony-service.test.ts` |
+| Item                             | Convention                                                       | Example                                                |
+| -------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Files (TS modules)               | kebab-case                                                       | `ceremony-service.ts`, `use-server-clock.ts`           |
+| React component files            | PascalCase                                                       | `SlideToActivate.tsx`                                  |
+| React components, classes, types | PascalCase                                                       | `CeremonyState`, `GuestStatusCard`                     |
+| Functions, variables             | camelCase                                                        | `computeRemainingMs`                                   |
+| Hooks                            | `use` prefix                                                     | `useCeremonySocket`                                    |
+| Constants                        | UPPER_SNAKE_CASE                                                 | `DEFAULT_COUNTDOWN_DURATION_MS`                        |
+| Ceremony states, error codes     | UPPER_SNAKE_CASE string literals                                 | `COLLECTING_ACTIVATIONS`, `ALREADY_ACTIVATED`          |
+| Role IDs                         | kebab-case string literals                                       | `chief`, `vice-chancellor`, `dean`, `display`, `admin` |
+| Socket events                    | `domain:action`, kebab-case action                               | `guest:activate`, `event:countdown-started`            |
+| REST paths                       | lowercase kebab-case                                             | `/api/event/manual-start`                              |
+| Environment variables            | UPPER_SNAKE_CASE; browser-exposed ones start with `NEXT_PUBLIC_` | `SESSION_SECRET`, `NEXT_PUBLIC_SERVER_URL`             |
+| Tests                            | `*.test.ts` next to the code; E2E in `apps/web/e2e/*.spec.ts`    | `ceremony-service.test.ts`                             |
 
 ## 8. Component organization (frontend)
 
@@ -219,7 +259,7 @@ Full detail: [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md).
 Full detail: [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
 
 - Colours: navy blue `#1b3a6b` (primary) and gold `#c9a227` (secondary), with the supporting greys and blues listed there. These were extracted from the faculty website CSS and are not yet confirmed against a formal brand guide.
-- Use the Tailwind theme tokens; never hardcode HEX values in components. Never introduce a new "brand" colour without a documented source.
+- Use the Tailwind theme tokens defined in `apps/web/app/brand-tokens.css` (for example `text-navy-blue`, `bg-gold`, `font-heading`); never hardcode HEX values in components. Never introduce a new "brand" colour without a documented source.
 - Fonts: Outfit (headings) and Inter (body), self-hosted through `next/font`.
 - Logos: only approved official files from `apps/web/public/images/brand/`. Do not hotlink, recreate, recolour or invent logos. Until files are supplied, use a plain text label and never call a placeholder official.
 - All five interfaces share one design system.
@@ -247,14 +287,14 @@ Do NOT:
 
 ## 18. Documentation map
 
-| Document | Purpose |
-|---|---|
-| [README.md](README.md) | Introduction and setup |
-| [PLAN.md](PLAN.md) | Phased roadmap and task status |
-| [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | Purpose, roles, scope |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture, state machine, sync, recovery, open decisions |
-| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | FR and NFR with acceptance criteria |
-| [docs/API_SPECIFICATION.md](docs/API_SPECIFICATION.md) | REST and Socket.IO contracts, env variables |
-| [docs/SECURITY.md](docs/SECURITY.md) | Auth, RBAC, secrets, rate limits |
-| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Branding, typography, UI, animation, audio |
-| [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Test levels, scenarios, rehearsal checklist |
+| Document                                               | Purpose                                                     |
+| ------------------------------------------------------ | ----------------------------------------------------------- |
+| [README.md](README.md)                                 | Introduction and setup                                      |
+| [PLAN.md](PLAN.md)                                     | Phased roadmap and task status                              |
+| [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)   | Purpose, roles, scope                                       |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)           | Architecture, state machine, sync, recovery, open decisions |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)           | FR and NFR with acceptance criteria                         |
+| [docs/API_SPECIFICATION.md](docs/API_SPECIFICATION.md) | REST and Socket.IO contracts, env variables                 |
+| [docs/SECURITY.md](docs/SECURITY.md)                   | Auth, RBAC, secrets, rate limits                            |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)         | Branding, typography, UI, animation, audio                  |
+| [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md)   | Test levels, scenarios, rehearsal checklist                 |

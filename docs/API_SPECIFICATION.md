@@ -24,15 +24,15 @@ type Result<T> = Ok<T> | Err;
 
 ### Error codes
 
-| Code | HTTP | Meaning |
-|---|---|---|
-| `VALIDATION_ERROR` | 400 | Body or payload failed schema validation, has unknown fields, or the confirmation phrase is wrong. |
-| `UNAUTHORIZED` | 401 | No valid session, invalid credential, or wrong re-entered password. |
-| `FORBIDDEN` | 403 | Valid session, but the role may not perform this action. |
-| `INVALID_TRANSITION` | 409 | The action is not allowed in the current state. `details` contains `{ status }`. |
-| `ALREADY_ACTIVATED` | 409 | This guest role has already been activated in this run. `details` contains `{ activatedAt }`. |
-| `RATE_LIMITED` | 429 | Too many requests. `details` may contain `{ retryAfterMs }`. |
-| `INTERNAL_ERROR` | 500 | Unexpected server failure. Details are logged server-side only. |
+| Code                 | HTTP | Meaning                                                                                            |
+| -------------------- | ---- | -------------------------------------------------------------------------------------------------- |
+| `VALIDATION_ERROR`   | 400  | Body or payload failed schema validation, has unknown fields, or the confirmation phrase is wrong. |
+| `UNAUTHORIZED`       | 401  | No valid session, invalid credential, or wrong re-entered password.                                |
+| `FORBIDDEN`          | 403  | Valid session, but the role may not perform this action.                                           |
+| `INVALID_TRANSITION` | 409  | The action is not allowed in the current state. `details` contains `{ status }`.                   |
+| `ALREADY_ACTIVATED`  | 409  | This guest role has already been activated in this run. `details` contains `{ activatedAt }`.      |
+| `RATE_LIMITED`       | 429  | Too many requests. `details` may contain `{ retryAfterMs }`.                                       |
+| `INTERNAL_ERROR`     | 500  | Unexpected server failure. Details are logged server-side only.                                    |
 
 ### Validation
 
@@ -48,12 +48,7 @@ type Result<T> = Ok<T> | Err;
 
 ```ts
 type CeremonyStatus =
-  | "WAITING"
-  | "READY"
-  | "COLLECTING_ACTIVATIONS"
-  | "COUNTDOWN"
-  | "OPENED"
-  | "ABORTED";
+  "WAITING" | "READY" | "COLLECTING_ACTIVATIONS" | "COUNTDOWN" | "OPENED" | "ABORTED";
 
 type GuestRole = "chief" | "vice-chancellor" | "dean";
 type Role = GuestRole | "display" | "admin";
@@ -62,22 +57,22 @@ type GuestActivation = { activatedAt: number } | null;
 
 type CountdownInfo = {
   trigger: "ALL_ACTIVATED" | "MANUAL";
-  acceptedAt: number;   // server time the countdown was decided
-  startsAt: number;     // acceptedAt + preparationDelayMs
-  durationMs: number;   // default 5000
-  opensAt: number;      // startsAt + durationMs
+  acceptedAt: number; // server time the countdown was decided
+  startsAt: number; // acceptedAt + preparationDelayMs
+  durationMs: number; // default 5000
+  opensAt: number; // startsAt + durationMs
 };
 
 type CeremonyState = {
-  runId: string;        // changes on every reset
-  version: number;      // increments on every state change
+  runId: string; // changes on every reset
+  version: number; // increments on every state change
   status: CeremonyStatus;
   activations: Record<GuestRole, GuestActivation>;
   countdown: CountdownInfo | null;
   openedAt: number | null;
   abortedAt: number | null;
   updatedAt: number;
-  serverTime: number;   // server clock when this snapshot was sent
+  serverTime: number; // server clock when this snapshot was sent
 };
 
 type DeviceStatus = {
@@ -90,7 +85,7 @@ type DeviceStatus = {
 type ActivityEntry = {
   id: string;
   at: number;
-  type: string;        // e.g. "STATE_CHANGED", "ACTIVATION_ACCEPTED", "ACTIVATION_REJECTED", "DEVICE_CONNECTED", "ADMIN_ACTION"
+  type: string; // e.g. "STATE_CHANGED", "ACTIVATION_ACCEPTED", "ACTIVATION_REJECTED", "DEVICE_CONNECTED", "ADMIN_ACTION"
   actorRole: Role | "server" | null;
   message: string;
   data?: Record<string, unknown>; // never contains secrets
@@ -101,20 +96,20 @@ type ActivityEntry = {
 
 ### Permission summary
 
-| Endpoint | Auth | Allowed roles | Allowed states |
-|---|---|---|---|
-| `GET /api/health` | None | Any | Any |
-| `POST /api/auth/guest` | Credential in body | n/a | Any |
-| `POST /api/auth/display` | Credential in body | n/a | Any |
-| `POST /api/auth/admin` | Credential in body | n/a | Any |
-| `GET /api/auth/session` | Session | Any authenticated | Any |
-| `GET /api/event/state` | Session | Any authenticated | Any |
-| `GET /api/event/activity` | Session | `admin` | Any |
-| `POST /api/event/prepare` | Session | `admin` | `WAITING` |
-| `POST /api/event/start` | Session | `admin` | `READY` |
-| `POST /api/event/abort` | Session | `admin` | `READY`, `COLLECTING_ACTIVATIONS`, `COUNTDOWN` |
-| `POST /api/event/reset` | Session | `admin` | `READY`, `COLLECTING_ACTIVATIONS`, `OPENED`, `ABORTED` |
-| `POST /api/event/manual-start` | Session + password re-entry | `admin` | `COLLECTING_ACTIVATIONS` |
+| Endpoint                       | Auth                        | Allowed roles     | Allowed states                                         |
+| ------------------------------ | --------------------------- | ----------------- | ------------------------------------------------------ |
+| `GET /api/health`              | None                        | Any               | Any                                                    |
+| `POST /api/auth/guest`         | Credential in body          | n/a               | Any                                                    |
+| `POST /api/auth/display`       | Credential in body          | n/a               | Any                                                    |
+| `POST /api/auth/admin`         | Credential in body          | n/a               | Any                                                    |
+| `GET /api/auth/session`        | Session                     | Any authenticated | Any                                                    |
+| `GET /api/event/state`         | Session                     | Any authenticated | Any                                                    |
+| `GET /api/event/activity`      | Session                     | `admin`           | Any                                                    |
+| `POST /api/event/prepare`      | Session                     | `admin`           | `WAITING`                                              |
+| `POST /api/event/start`        | Session                     | `admin`           | `READY`                                                |
+| `POST /api/event/abort`        | Session                     | `admin`           | `READY`, `COLLECTING_ACTIVATIONS`, `COUNTDOWN`         |
+| `POST /api/event/reset`        | Session                     | `admin`           | `READY`, `COLLECTING_ACTIVATIONS`, `OPENED`, `ABORTED` |
+| `POST /api/event/manual-start` | Session + password re-entry | `admin`           | `COLLECTING_ACTIVATIONS`                               |
 
 `/api/auth/display`, `/api/auth/session`, `/api/event/activity` and `/api/health` are additions to the initially listed endpoints. They are needed for display authentication, client session checks, the admin activity view and network diagnostics respectively.
 
@@ -219,19 +214,19 @@ Emergency override that starts the countdown without all three activations.
 
 ### Rooms
 
-| Room | Members |
-|---|---|
-| `ceremony` | Every authenticated socket |
-| `role:chief`, `role:vice-chancellor`, `role:dean`, `role:display`, `role:admin` | Sockets for that role |
+| Room                                                                            | Members                    |
+| ------------------------------------------------------------------------------- | -------------------------- |
+| `ceremony`                                                                      | Every authenticated socket |
+| `role:chief`, `role:vice-chancellor`, `role:dean`, `role:display`, `role:admin` | Sockets for that role      |
 
 ### Client to server events
 
 All client-to-server events use an acknowledgement callback that receives a `Result`.
 
-| Event | Allowed roles | Payload | Ack data | Errors |
-|---|---|---|---|---|
-| `guest:activate` | `chief`, `vice-chancellor`, `dean` | `{}` (strict, no fields) | `{ role: GuestRole; activatedAt: number; version: number }` | `FORBIDDEN`, `VALIDATION_ERROR`, `INVALID_TRANSITION`, `ALREADY_ACTIVATED`, `RATE_LIMITED` |
-| `clock:sync` | Any authenticated | `{ clientSentAt: number }` | `{ clientSentAt: number; serverTime: number }` | `VALIDATION_ERROR`, `RATE_LIMITED` |
+| Event            | Allowed roles                      | Payload                    | Ack data                                                    | Errors                                                                                     |
+| ---------------- | ---------------------------------- | -------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `guest:activate` | `chief`, `vice-chancellor`, `dean` | `{}` (strict, no fields)   | `{ role: GuestRole; activatedAt: number; version: number }` | `FORBIDDEN`, `VALIDATION_ERROR`, `INVALID_TRANSITION`, `ALREADY_ACTIVATED`, `RATE_LIMITED` |
+| `clock:sync`     | Any authenticated                  | `{ clientSentAt: number }` | `{ clientSentAt: number; serverTime: number }`              | `VALIDATION_ERROR`, `RATE_LIMITED`                                                         |
 
 `clock:sync` is an addition to the initially listed events, required for countdown synchronization (see [ARCHITECTURE.md](ARCHITECTURE.md#7-countdown-synchronization)).
 
@@ -239,17 +234,17 @@ Admin commands are REST only (section 4), not socket events, so that each has a 
 
 ### Server to client events
 
-| Event | Recipients | Payload | When |
-|---|---|---|---|
-| `event:state` | Connecting socket; `ceremony` room after each change | `CeremonyState` | On connect and after every state change |
-| `event:activation-started` | `ceremony` | `{ runId; version; startedAt: number }` | `READY` to `COLLECTING_ACTIVATIONS` |
-| `guest:activated` | `ceremony` | `{ runId; version; role: GuestRole; activatedAt: number; activatedCount: number }` | Each accepted activation |
-| `event:countdown-started` | `ceremony` | `{ runId; version; serverTime: number } & CountdownInfo` | Entering `COUNTDOWN` |
-| `event:opened` | `ceremony` | `{ runId; version; openedAt: number }` | Server timer reaches `opensAt` |
-| `event:aborted` | `ceremony` | `{ runId; version; abortedAt: number; reason: string \| null }` | Entering `ABORTED` |
-| `event:reset` | `ceremony` | `{ runId; version; resetAt: number }` (new `runId`) | Entering `WAITING` by reset |
-| `device:status` | `role:admin` | `{ devices: DeviceStatus[] }` (all five roles) | On admin connect and on any presence change |
-| `activity:logged` | `role:admin` | `ActivityEntry` | Each new activity entry |
+| Event                      | Recipients                                           | Payload                                                                            | When                                        |
+| -------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------- |
+| `event:state`              | Connecting socket; `ceremony` room after each change | `CeremonyState`                                                                    | On connect and after every state change     |
+| `event:activation-started` | `ceremony`                                           | `{ runId; version; startedAt: number }`                                            | `READY` to `COLLECTING_ACTIVATIONS`         |
+| `guest:activated`          | `ceremony`                                           | `{ runId; version; role: GuestRole; activatedAt: number; activatedCount: number }` | Each accepted activation                    |
+| `event:countdown-started`  | `ceremony`                                           | `{ runId; version; serverTime: number } & CountdownInfo`                           | Entering `COUNTDOWN`                        |
+| `event:opened`             | `ceremony`                                           | `{ runId; version; openedAt: number }`                                             | Server timer reaches `opensAt`              |
+| `event:aborted`            | `ceremony`                                           | `{ runId; version; abortedAt: number; reason: string \| null }`                    | Entering `ABORTED`                          |
+| `event:reset`              | `ceremony`                                           | `{ runId; version; resetAt: number }` (new `runId`)                                | Entering `WAITING` by reset                 |
+| `device:status`            | `role:admin`                                         | `{ devices: DeviceStatus[] }` (all five roles)                                     | On admin connect and on any presence change |
+| `activity:logged`          | `role:admin`                                         | `ActivityEntry`                                                                    | Each new activity entry                     |
 
 `activity:logged` is an addition, used by the admin activity view.
 
@@ -263,25 +258,25 @@ Admin commands are REST only (section 4), not socket events, so that each has a 
 
 Server (`apps/server`):
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `HOST` | `0.0.0.0` | Bind address |
-| `PORT` | `4000` | HTTP and Socket.IO port |
-| `CORS_ORIGINS` | none (required) | Comma-separated allowed web origins |
-| `SESSION_SECRET` | none (required) | Token signing key, at least 32 random bytes |
-| `GUEST_CHIEF_ACCESS_CODE` | none (required) | Chief Guest credential |
-| `GUEST_VICE_CHANCELLOR_ACCESS_CODE` | none (required) | Vice Chancellor credential |
-| `GUEST_DEAN_ACCESS_CODE` | none (required) | Dean credential |
-| `DISPLAY_ACCESS_CODE` | none (required) | Main display credential |
-| `ADMIN_PASSWORD_HASH` | none (required) | scrypt hash of the admin password |
-| `COUNTDOWN_DURATION_MS` | `5000` | Countdown length |
-| `PREPARATION_DELAY_MS` | `0` | Optional delay before countdown starts |
-| `LOG_LEVEL` | `info` | Log verbosity |
+| Variable                            | Default         | Purpose                                     |
+| ----------------------------------- | --------------- | ------------------------------------------- |
+| `HOST`                              | `0.0.0.0`       | Bind address                                |
+| `PORT`                              | `4000`          | HTTP and Socket.IO port                     |
+| `CORS_ORIGINS`                      | none (required) | Comma-separated allowed web origins         |
+| `SESSION_SECRET`                    | none (required) | Token signing key, at least 32 random bytes |
+| `GUEST_CHIEF_ACCESS_CODE`           | none (required) | Chief Guest credential                      |
+| `GUEST_VICE_CHANCELLOR_ACCESS_CODE` | none (required) | Vice Chancellor credential                  |
+| `GUEST_DEAN_ACCESS_CODE`            | none (required) | Dean credential                             |
+| `DISPLAY_ACCESS_CODE`               | none (required) | Main display credential                     |
+| `ADMIN_PASSWORD_HASH`               | none (required) | scrypt hash of the admin password           |
+| `COUNTDOWN_DURATION_MS`             | `5000`          | Countdown length                            |
+| `PREPARATION_DELAY_MS`              | `0`             | Optional delay before countdown starts      |
+| `LOG_LEVEL`                         | `info`          | Log verbosity                               |
 
 Web (`apps/web`):
 
-| Variable | Default | Purpose |
-|---|---|---|
+| Variable                 | Default         | Purpose                                         |
+| ------------------------ | --------------- | ----------------------------------------------- |
 | `NEXT_PUBLIC_SERVER_URL` | none (required) | Origin of `apps/server`, for REST and Socket.IO |
 
 The server MUST validate its environment at startup and refuse to start if a required variable is missing or invalid. Example files (`.env.example`) will be added with the apps in Phase 1 and Phase 2.

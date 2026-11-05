@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "./brand-tokens.css";
+
+@layer base {
+  html {
+    @apply bg-white font-sans text-dark-grey antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}

@@ -1,0 +1,22 @@
+/*
+ * Single source of truth for brand design tokens.
+ *
+ * PROVISIONAL: colour values were extracted from the Faculty of IT website CSS
+ * (https://itfac.uom.ac.lk/assets/styles-C5vzmBWd.css, retrieved 2026-11-05) and are
+ * NOT yet confirmed against an official brand guideline. See docs/DESIGN_SYSTEM.md.
+ * Token names match the website's so values stay traceable to the source.
+ */
+@theme {
+  --color-navy-blue: #1b3a6b;
+  --color-gold: #c9a227;
+  --color-light-grey: #e8e8e8;
+  --color-dark-grey: #3a3a3a;
+  --color-light-blue-bg: #e3f2fd;
+  --color-accent-blue: #2196f3;
+}
+
+/* Font variables are set by next/font in app/layout.tsx. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}

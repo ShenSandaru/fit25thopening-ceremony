@@ -16,14 +16,14 @@ Goal: no one can trigger, block, or fake any ceremony step without the right cre
 
 ## 2. Roles and permissions (RBAC)
 
-| Action | chief | vice-chancellor | dean | display | admin |
-|---|---|---|---|---|---|
-| Read state (`GET /api/event/state`, `event:state`) | Yes | Yes | Yes | Yes | Yes |
-| `clock:sync` | Yes | Yes | Yes | Yes | Yes |
-| `guest:activate` (own role only, implicit) | Yes | Yes | Yes | No | No |
-| Prepare, start, abort, reset | No | No | No | No | Yes |
-| Manual start (with password re-entry) | No | No | No | No | Yes |
-| Read activity log, `device:status`, `activity:logged` | No | No | No | No | Yes |
+| Action                                                | chief | vice-chancellor | dean | display | admin |
+| ----------------------------------------------------- | ----- | --------------- | ---- | ------- | ----- |
+| Read state (`GET /api/event/state`, `event:state`)    | Yes   | Yes             | Yes  | Yes     | Yes   |
+| `clock:sync`                                          | Yes   | Yes             | Yes  | Yes     | Yes   |
+| `guest:activate` (own role only, implicit)            | Yes   | Yes             | Yes  | No      | No    |
+| Prepare, start, abort, reset                          | No    | No              | No   | No      | Yes   |
+| Manual start (with password re-entry)                 | No    | No              | No   | No      | Yes   |
+| Read activity log, `device:status`, `activity:logged` | No    | No              | No   | No      | Yes   |
 
 Rules:
 
@@ -68,13 +68,13 @@ Rules:
 
 ## 7. Rate limiting
 
-| Target | Proposed limit | Key |
-|---|---|---|
-| `POST /api/auth/*` | 10 requests per minute | Client IP |
-| `POST /api/event/manual-start` | 5 requests per 5 minutes | Session |
-| Other admin `POST /api/event/*` | 30 requests per minute | Session |
-| `guest:activate` | 5 events per 10 seconds | Socket |
-| `clock:sync` | 20 events per 10 seconds | Socket |
+| Target                          | Proposed limit           | Key       |
+| ------------------------------- | ------------------------ | --------- |
+| `POST /api/auth/*`              | 10 requests per minute   | Client IP |
+| `POST /api/event/manual-start`  | 5 requests per 5 minutes | Session   |
+| Other admin `POST /api/event/*` | 30 requests per minute   | Session   |
+| `guest:activate`                | 5 events per 10 seconds  | Socket    |
+| `clock:sync`                    | 20 events per 10 seconds | Socket    |
 
 Exceeding a limit returns `RATE_LIMITED`. Limits are configuration, tuned during rehearsal so that legitimate use is never blocked. Library choice (for example, `express-rate-limit` for REST, a small in-process counter for sockets) is decided in Phase 8.
 
@@ -116,11 +116,11 @@ Every attempt, successful or not, is written to the activity log with timestamp,
 
 The venue network is **PENDING**. Implications by option:
 
-| Option | Consideration |
-|---|---|
+| Option                    | Consideration                                                                                                                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Existing university Wi-Fi | Shared with other users; client isolation may block device-to-server traffic; captive portals may interfere. Prefer HTTPS if feasible; strong credentials are mandatory. Verify ports are reachable during the venue survey. |
-| Dedicated local router | Smaller attack surface. Use WPA2/WPA3 with a strong passphrase; hide from the public; disable WAN if not needed. HTTP may be acceptable on an isolated network but HTTPS is still preferred. |
-| Other arrangement | Evaluate against the same criteria: isolation, reachability, stability, ability to fix IP addresses. |
+| Dedicated local router    | Smaller attack surface. Use WPA2/WPA3 with a strong passphrase; hide from the public; disable WAN if not needed. HTTP may be acceptable on an isolated network but HTTPS is still preferred.                                 |
+| Other arrangement         | Evaluate against the same criteria: isolation, reachability, stability, ability to fix IP addresses.                                                                                                                         |
 
 General rules:
 
