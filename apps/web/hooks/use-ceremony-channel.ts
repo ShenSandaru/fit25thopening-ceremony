@@ -109,8 +109,9 @@ export function useCeremonyChannel(
           // Immediately mute / pause background music when countdown commences
           audioRef.current?.pauseBackground(true);
         } else if (incoming.status === "OPENED") {
-          // Resume background music after countdown is over
-          void audioRef.current?.resumeBackground("launch");
+          // Stop background music completely and play the one-time celebratory blast sound
+          audioRef.current?.stopBackground(true);
+          audioRef.current?.playCue("impact");
         } else if (incoming.status === "ABORTED") {
           audioRef.current?.stop();
         }
@@ -172,7 +173,8 @@ export function useCeremonyChannel(
       if (current && (payload.runId !== current.runId || payload.version < current.version)) {
         return;
       }
-      void audioRef.current?.resumeBackground("launch");
+      audioRef.current?.stopBackground(true);
+      audioRef.current?.playCue("impact");
     });
 
     next.on(SERVER_EVENTS.EVENT_ABORTED, () => {

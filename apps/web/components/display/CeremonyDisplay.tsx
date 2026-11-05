@@ -111,12 +111,11 @@ export function CeremonyDisplay() {
       // Fullscreen can be denied; ceremony continues.
     }
     const initialTrack =
-      channel.ceremony?.status === "COLLECTING_ACTIVATIONS"
-        ? "waiting"
-        : channel.ceremony?.status === "OPENED"
-          ? "launch"
-          : undefined;
+      channel.ceremony?.status === "COLLECTING_ACTIVATIONS" ? "waiting" : undefined;
     await channel.audioRef.current?.unlock(initialTrack);
+    if (channel.ceremony?.status === "OPENED") {
+      channel.audioRef.current?.playCue("impact");
+    }
   }
 
   return (
@@ -172,7 +171,7 @@ export function CeremonyDisplay() {
               {/* Official Ceremony Pill */}
               <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-navy-blue/80 px-4 py-1 text-gold font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase shadow-[0_0_15px_rgba(201,162,39,0.2)]">
                 <span className="size-1.5 rounded-full bg-gold animate-pulse" />
-                OFFICIAL OPENING CEREMONY
+                OFFICIAL INAUGURATION CEREMONY
                 <span className="size-1.5 rounded-full bg-cyan-400" />
               </div>
 

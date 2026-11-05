@@ -147,7 +147,7 @@ export function LaunchReveal({ audioUnavailable = false }: LaunchRevealProps) {
 
           {/* Ceremonial Subheading */}
           <h2 className="text-xs sm:text-sm font-mono font-medium tracking-[0.3em] text-cyan-300/90 uppercase">
-            FIT EXPO Opening Ceremony
+            FIT EXPO INAUGURATION CEREMONY
           </h2>
 
           {/* Hero Title: FIT EXPO 2026 */}

@@ -59,7 +59,9 @@ test("three guests open the ceremony on the display", async ({ browser }) => {
       ),
     ).toBeVisible();
     await expect(display.locator("[data-display-view=opened]")).toBeVisible({ timeout: 20_000 });
-    await expect(display.getByRole("heading", { name: "FIT EXPO Opening Ceremony" })).toBeVisible();
+    await expect(
+      display.getByRole("heading", { name: "FIT EXPO INAUGURATION CEREMONY" }),
+    ).toBeVisible();
 
     await tablets[0]!.reload();
     await expect(tablets[0]!.getByText("The FIT EXPO is open.")).toBeVisible();

@@ -26,7 +26,7 @@ export const CEREMONY_AUDIO_CONFIG = {
     countdownCues: 0.65, // 55–70%
     finalLaunchMusic: 0.5, // 40–55%
     syncTransition: 0.55, // 50–60%
-    impactCue: 0.65, // 55–70%
+    impactCue: 0.85, // 80–90% celebratory launch blast
   },
   fades: {
     standardMs: 800,
@@ -61,6 +61,7 @@ export class CeremonyAudio {
   private unlocked = false;
   private currentBgTrack: BackgroundTrackName | null = null;
   private pausedBgTrack: BackgroundTrackName | null = null;
+  private lastBlastAt = 0;
 
   unavailable = false;
   onChange: (() => void) | null = null;
@@ -307,6 +308,14 @@ export class CeremonyAudio {
       return;
     }
 
+    if (name === "impact" || name === "opening") {
+      const now = Date.now();
+      if (this.lastBlastAt > 0 && now - this.lastBlastAt < 1500) {
+        return;
+      }
+      this.lastBlastAt = now;
+    }
+
     this.playSynthesizedCue(name);
 
     const src = CEREMONY_AUDIO_CONFIG.cues[name];
@@ -373,6 +382,7 @@ export class CeremonyAudio {
     this.clearFadeIntervals();
     this.currentBgTrack = null;
     this.pausedBgTrack = null;
+    this.lastBlastAt = 0;
     for (const clip of this.clips.values()) {
       try {
         clip.pause();

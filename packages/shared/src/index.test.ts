@@ -16,7 +16,7 @@ import {
 
 describe("@fit-expo/shared public API", () => {
   it("exports project constants", () => {
-    expect(PROJECT_NAME).toBe("FIT EXPO Opening Ceremony");
+    expect(PROJECT_NAME).toBe("FIT EXPO INAUGURATION CEREMONY");
     expect(DEFAULT_SERVER_PORT).toBe(4000);
     expect(DEFAULT_COUNTDOWN_DURATION_MS).toBe(3000);
   });
