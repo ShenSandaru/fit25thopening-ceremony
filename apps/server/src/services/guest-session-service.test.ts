@@ -119,12 +119,20 @@ describe("GuestSessionService", () => {
     expect(sessions.availability().find((row) => row.role === "dean")?.available).toBe(true);
   });
 
-  it("claims one display and reports presence without clearing a guest activation record", () => {
+  it("allows multiple displays to connect concurrently and aggregates display presence", () => {
     const { sessions } = service();
-    const display = sessions.claimDisplay(undefined);
-    const cookie = `fit_expo_session=${sessions.sign(display.id)}`;
-    expect(sessions.claimDisplay(cookie).id).toBe(display.id);
-    expect(() => sessions.claimDisplay(undefined)).toThrow(DomainError);
+    const display1 = sessions.claimDisplay(undefined);
+    const cookie1 = `fit_expo_session=${sessions.sign(display1.id)}`;
+    expect(sessions.claimDisplay(cookie1).id).toBe(display1.id);
+
+    const display2 = sessions.claimDisplay(undefined);
+    expect(display2.id).not.toBe(display1.id);
+    sessions.markConnected(display1.id);
+    sessions.markConnected(display2.id);
+
+    const displayPresence = sessions.presence().find((row) => row.role === "display");
+    expect(displayPresence).toMatchObject({ connected: true, connectionCount: 2 });
+
     const chief = sessions.assign("chief", undefined);
     sessions.markConnected(chief.id);
     sessions.markDisconnected(chief.id);
@@ -143,10 +151,8 @@ describe("GuestSessionService", () => {
   it("releases an assigned display session if it never connects within the grace period", () => {
     const { sessions, advance } = service(1_000);
     const first = sessions.claimDisplay(undefined);
-    expect(() => sessions.claimDisplay(undefined)).toThrow(DomainError);
+    const cookie = `fit_expo_session=${sessions.sign(first.id)}`;
     advance(1_000);
-    const second = sessions.claimDisplay(undefined);
-    expect(second.id).not.toBe(first.id);
-    expect(second.role).toBe("display");
+    expect(sessions.current(cookie)).toBeNull();
   });
 });

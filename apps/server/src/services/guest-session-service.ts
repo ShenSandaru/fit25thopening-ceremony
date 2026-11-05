@@ -90,8 +90,9 @@ export class GuestSessionService {
   }
 
   /**
-   * One projector session. A browser that already holds a guest role is rejected
-   * so a tablet cannot silently become the display.
+   * Claims a display session for `/` so any number of screens can view the ceremony
+   * in real time. A browser that already holds a guest role is rejected so a guest
+   * tablet cannot silently overwrite its guest session cookie.
    */
   claimDisplay(currentCookie: string | undefined): DeviceSession {
     this.sweep();
@@ -104,13 +105,6 @@ export class GuestSessionService {
     }
     if (current && current.status !== "RELEASED" && current.role === "display") {
       return current;
-    }
-    const holder = this.activeSessionForRole("display");
-    if (holder) {
-      throw new DomainError("FORBIDDEN", "The display is already open on another screen.", {
-        role: "display",
-        status: holder.status,
-      });
     }
     const now = this.clock.now();
     const session: DeviceSession = {
@@ -195,6 +189,26 @@ export class GuestSessionService {
     this.sweep();
     const roles: DeviceRole[] = [...GUEST_ROLES, "display"];
     return roles.map((role) => {
+      if (role === "display") {
+        const displays = this.activeSessionsForRole("display");
+        const connectionCount = displays.reduce(
+          (sum, session) => sum + (this.connectionCounts.get(session.id) ?? 0),
+          0,
+        );
+        const lastSeenAt = displays.reduce<number | null>(
+          (latest, session) =>
+            session.lastSeenAt !== null && (latest === null || session.lastSeenAt > latest)
+              ? session.lastSeenAt
+              : latest,
+          null,
+        );
+        return {
+          role,
+          connected: connectionCount > 0,
+          connectionCount,
+          lastSeenAt,
+        };
+      }
       const holder = this.activeSessionForRole(role);
       const connectionCount = holder ? (this.connectionCounts.get(holder.id) ?? 0) : 0;
       return {
@@ -289,6 +303,11 @@ export class GuestSessionService {
   }
 
   activeSessionForRole(role: DeviceRole): DeviceSession | undefined {
+    return this.activeSessionsForRole(role)[0];
+  }
+
+  private activeSessionsForRole(role: DeviceRole): DeviceSession[] {
+    const active: DeviceSession[] = [];
     for (const session of this.sessions.values()) {
       if (session.role !== role || session.status === "RELEASED") {
         continue;
@@ -303,9 +322,9 @@ export class GuestSessionService {
       ) {
         continue;
       }
-      return session;
+      active.push(session);
     }
-    return undefined;
+    return active;
   }
 
   private sweep(): void {
