@@ -57,6 +57,7 @@ export function CeremonyDisplay() {
   }, []);
 
   async function begin() {
+    await channel.audioRef.current?.unlock("waiting");
     await fetch("/api/event/begin-activations", {
       method: "POST",
       credentials: "include",
@@ -75,7 +76,13 @@ export function CeremonyDisplay() {
     } catch {
       // Fullscreen can be denied; ceremony continues.
     }
-    await channel.audioRef.current?.unlock();
+    const initialTrack =
+      channel.ceremony?.status === "COLLECTING_ACTIVATIONS"
+        ? "waiting"
+        : channel.ceremony?.status === "OPENED"
+          ? "launch"
+          : "welcome";
+    await channel.audioRef.current?.unlock(initialTrack);
   }
 
   return (

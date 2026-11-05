@@ -10,6 +10,15 @@ type LaunchRevealProps = {
 export function LaunchReveal({ audioUnavailable = false }: LaunchRevealProps) {
   return (
     <div className="display-enter relative z-20 flex w-full max-w-6xl flex-col items-center justify-center gap-4 sm:gap-6 px-2 sm:px-4 text-center select-none">
+      {/* Cinematic Golden Ambient Glow & Radial Illumination Backdrop */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+      >
+        <div className="size-[500px] sm:size-[700px] rounded-full bg-radial from-gold/25 via-gold/5 to-transparent blur-3xl animate-pulse" />
+        <div className="size-[320px] sm:size-[480px] rounded-full bg-radial from-cyan-400/10 via-transparent to-transparent blur-2xl" />
+      </div>
+
       {/* Main Balanced Composition: Left Anniversary Plaque + Right Announcement Focal Point */}
       <div className="relative z-30 flex w-full flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-12">
         {/* 1. Left: Official FIT 25th Anniversary Prestige Plaque */}
@@ -87,25 +96,14 @@ export function LaunchReveal({ audioUnavailable = false }: LaunchRevealProps) {
 
         {/* 2. Right: Central Announcement Sequence (Primary Focal Point) */}
         <div className="relative z-30 flex flex-1 flex-col items-center justify-center gap-[clamp(0.35rem,1.3vh,0.9rem)] max-w-2xl px-2">
-          {/* Energized Compact Robotic Core in Opened State with Shockwave Halo */}
+          {/* Energized Compact Robotic Core in Opened State */}
           <div className="relative flex items-center justify-center">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            >
-              <div className="animate-shockwave size-[220px] sm:size-[300px] rounded-full border-2 border-gold/70" />
-              <div
-                className="animate-shockwave size-[180px] sm:size-[260px] rounded-full border border-cyan-400/40"
-                style={{ animationDelay: "600ms" }}
-              />
-              <div className="size-[300px] sm:size-[420px] rounded-full bg-radial from-gold/30 via-navy-blue/20 to-transparent blur-3xl animate-pulse" />
-            </div>
             <RoboticEnergyCore activatedCount={3} isOpened compact />
           </div>
 
           {/* Ceremonial Subheading */}
           <h2 className="text-xs sm:text-sm font-mono font-medium tracking-[0.3em] text-cyan-300/90 uppercase">
-            FIT Expo Opening Ceremony
+            FIT EXPO Opening Ceremony
           </h2>
 
           {/* Hero Title: FIT EXPO 2026 */}

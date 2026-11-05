@@ -217,7 +217,7 @@ function messageFor(view: string, seconds: number | null): string {
         ? `The opening countdown has begun. ${seconds}`
         : "The opening countdown has begun.";
     case "completed":
-      return "The FIT Expo is open.";
+      return "The FIT EXPO is open.";
     case "aborted":
       return "The ceremony was stopped.";
     case "disconnected":

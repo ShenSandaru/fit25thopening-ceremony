@@ -21,7 +21,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: PROJECT_NAME,
   description:
-    "FIT Expo opening ceremony, Faculty of Information Technology, University of Moratuwa",
+    "FIT EXPO opening ceremony, Faculty of Information Technology, University of Moratuwa",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

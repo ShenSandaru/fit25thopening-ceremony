@@ -17,7 +17,7 @@ test.afterEach(async ({ page }) => {
 
 test("display route uses faculty colours and heading font", async ({ page }) => {
   await page.goto("/");
-  const heading = page.getByRole("heading", { name: "FIT Expo Opening Ceremony" });
+  const heading = page.getByRole("heading", { name: "FIT EXPO Opening Ceremony" });
   await expect(heading).toBeVisible();
   await expect(heading).toHaveCSS("color", "rgb(255, 255, 255)");
   const fontFamily = await heading.evaluate(
