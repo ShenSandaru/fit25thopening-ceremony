@@ -183,7 +183,7 @@ export function CeremonyDisplay() {
                 </p>
               </div>
 
-              {/* Holographic Handprint Stations for Chief, VC, Dean */}
+              {/* Holographic Handprint Stations for Guest 1, Guest 2, Guest 3 */}
               <HolographicHandprints state={channel.ceremony} devices={channel.devices} />
             </div>
           ) : view === "all-activated" ? (

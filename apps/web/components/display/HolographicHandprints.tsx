@@ -159,7 +159,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
                 </div>
               </div>
 
-              {/* Designation & Status Readout */}
+              {/* Station Label & Status Readout */}
               <div className="w-full text-center">
                 <h3 className="font-heading text-lg sm:text-xl font-extrabold text-white tracking-wide">
                   {generic.label}

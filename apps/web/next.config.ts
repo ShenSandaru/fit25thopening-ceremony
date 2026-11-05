@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   // Socket.IO requests `/socket.io/`. The default slash redirect turns that into a 404.
   skipTrailingSlashRedirect: true,
+  async redirects() {
+    return [
+      { source: "/guest/chief", destination: "/guest/1", permanent: false },
+      { source: "/guest/vice-chancellor", destination: "/guest/2", permanent: false },
+      { source: "/guest/dean", destination: "/guest/3", permanent: false },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [

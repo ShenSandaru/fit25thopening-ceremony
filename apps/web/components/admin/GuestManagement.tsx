@@ -7,7 +7,7 @@ import {
   type RoleAvailability,
 } from "@fit-expo/shared";
 import { useState } from "react";
-import { GENERIC_GUEST_LABELS, GUEST_LABELS } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS } from "@/lib/guest-config";
 import { ConfirmDialog } from "./ConfirmDialog";
 
 type GuestManagementProps = {
@@ -37,7 +37,6 @@ export function GuestManagement({
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {GUEST_ROLES.map((role) => {
           const generic = GENERIC_GUEST_LABELS[role];
-          const config = GUEST_LABELS[role];
           const isActivated = Boolean(state?.activations[role]);
           const info = availability.find((a) => a.role === role);
           const isAssigned = info ? !info.available : false;
@@ -68,7 +67,9 @@ export function GuestManagement({
                     {isAssigned ? "Assigned" : "Available"}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-slate-500 font-mono">{config.title}</p>
+                <p className="mt-1 text-xs text-slate-500 font-mono">
+                  {generic.station} · {generic.position} Station
+                </p>
 
                 <div className="mt-2 text-xs text-slate-600">
                   {isActivated ? (
@@ -102,8 +103,8 @@ export function GuestManagement({
 
       <ConfirmDialog
         isOpen={roleToRelease !== null}
-        title={`Release ${roleToRelease ? GUEST_LABELS[roleToRelease].title : "Tablet"}?`}
-        description="Are you sure you want to release this tablet session? The tablet will be unassigned and can be assigned to a new role from /guest."
+        title={`Release ${roleToRelease ? GENERIC_GUEST_LABELS[roleToRelease].label : "Tablet"}?`}
+        description="Are you sure you want to release this tablet session? The tablet will be unassigned and can be assigned to a new station from /guest."
         confirmText="Release Session"
         isDestructive={true}
         onConfirm={async () => {

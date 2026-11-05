@@ -10,13 +10,14 @@ Three distinguished guests (the Chief Guest, the Vice Chancellor and the Dean of
 
 ## Interfaces
 
-| Interface              | Route                    |
-| ---------------------- | ------------------------ |
-| Main Display           | `/`                      |
-| Chief Guest tablet     | `/guest/chief`           |
-| Vice Chancellor tablet | `/guest/vice-chancellor` |
-| Dean of IT tablet      | `/guest/dean`            |
-| Admin Dashboard        | `/admin`                 |
+| Interface               | Route      | Station           |
+| ----------------------- | ---------- | ----------------- |
+| Main Display            | `/`        | Audience / Screen |
+| Guest 1 tablet          | `/guest/1` | Left Station      |
+| Guest 2 tablet          | `/guest/2` | Center Station    |
+| Guest 3 tablet          | `/guest/3` | Right Station     |
+| Tablet Station Selector | `/guest`   | Device Assignment |
+| Admin Dashboard         | `/admin`   | Control Console   |
 
 ## Planned architecture
 

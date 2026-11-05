@@ -1,6 +1,7 @@
 "use client";
 
 import type { DeviceRole, DeviceStatus, RoleAvailability } from "@fit-expo/shared";
+import { formatGuestRole } from "@/lib/guest-config";
 
 type DeviceMonitoringProps = {
   devices: DeviceStatus[];
@@ -23,19 +24,19 @@ const EXPECTED_DEVICES: ExpectedDevice[] = [
   },
   {
     id: "chief",
-    name: "Chief Guest Tablet",
+    name: "Guest 1 Tablet (Left Station)",
     type: "Touch Tablet Device",
     role: "chief",
   },
   {
     id: "vice-chancellor",
-    name: "Vice Chancellor Tablet",
+    name: "Guest 2 Tablet (Center Station)",
     type: "Touch Tablet Device",
     role: "vice-chancellor",
   },
   {
     id: "dean",
-    name: "Dean of IT Tablet",
+    name: "Guest 3 Tablet (Right Station)",
     type: "Touch Tablet Device",
     role: "dean",
   },
@@ -85,7 +86,7 @@ export function DeviceMonitoring({ devices, availability }: DeviceMonitoringProp
                   <td className="px-4 py-3.5 font-bold text-navy-blue">{item.name}</td>
                   <td className="px-4 py-3.5 text-slate-600">{item.type}</td>
                   <td className="px-4 py-3.5">
-                    <span className="font-mono text-slate-700">{item.role}</span>
+                    <span className="font-mono text-slate-700">{formatGuestRole(item.role)}</span>
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">

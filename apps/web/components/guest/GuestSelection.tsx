@@ -3,7 +3,7 @@
 import { GUEST_ROLES, type GuestRole } from "@fit-expo/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { GENERIC_GUEST_LABELS, GUEST_LABELS } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS } from "@/lib/guest-config";
 
 export function GuestSelection() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export function GuestSelection() {
       setError(body.error?.message ?? "This role could not be assigned.");
       return;
     }
-    router.push(`/guest/${role}`);
+    router.push(GENERIC_GUEST_LABELS[role].route);
   }
 
   return (
@@ -48,7 +48,7 @@ export function GuestSelection() {
             Assign Tablet Station
           </h1>
           <p className="max-w-xl font-mono text-xs sm:text-sm text-white/70 leading-relaxed">
-            Select the biometric station designation for this device before handing it to the guest.
+            Select the guest station for this device before handing it to the guest.
           </p>
         </header>
 
@@ -65,13 +65,12 @@ export function GuestSelection() {
         <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
           {GUEST_ROLES.map((role) => {
             const generic = GENERIC_GUEST_LABELS[role];
-            const designation = GUEST_LABELS[role].title;
 
             return (
               <button
                 key={role}
                 type="button"
-                aria-label={designation}
+                aria-label={`${generic.label} - ${generic.position} Position`}
                 disabled={pending !== null}
                 onClick={() => void assign(role)}
                 className="group relative flex min-h-44 sm:min-h-48 flex-col justify-between rounded-2xl border border-cyan-500/40 bg-navy-blue/70 p-5 sm:p-6 text-left shadow-lg backdrop-blur-md transition-all hover:border-gold hover:bg-navy-blue/90 hover:shadow-[0_0_25px_rgba(201,162,39,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-50 cursor-pointer"
@@ -94,7 +93,6 @@ export function GuestSelection() {
                   <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-extrabold text-white group-hover:text-gold transition-colors">
                     {generic.label}
                   </h2>
-                  <p className="mt-1 font-mono text-xs text-white/60">{designation}</p>
                 </div>
 
                 <div className="mt-4 sm:mt-6 flex items-center justify-between pt-3 border-t border-white/10">

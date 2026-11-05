@@ -191,10 +191,18 @@ export function createSocketServer(deps: {
           ack(err("INTERNAL_ERROR", "Activation was not recorded."));
           return;
         }
+        const guestLabel =
+          role === "chief"
+            ? "Guest 1"
+            : role === "vice-chancellor"
+              ? "Guest 2"
+              : role === "dean"
+                ? "Guest 3"
+                : role;
         const entry = deps.activityLog.append({
           type: "ACTIVATION_ACCEPTED",
           actorRole: role,
-          message: `${role} activated control`,
+          message: `${guestLabel} activated control`,
           data: { role, activatedAt: activation.activatedAt, version: state.version },
         });
         io.to(roleRoom("admin")).emit(SERVER_EVENTS.ACTIVITY_LOGGED, entry);

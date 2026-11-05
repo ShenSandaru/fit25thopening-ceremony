@@ -14,12 +14,12 @@ Conventions:
 
 ### Interfaces and access
 
-| ID     | Requirement                                                                                                                                                                                                              | Tests        |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| FR-001 | The web app MUST provide the routes `/` (ceremony display), `/guest/chief`, `/guest/vice-chancellor`, `/guest/dean` and `/admin`. The display is a browser page. A projector only mirrors or extends that laptop screen. | TS-19        |
-| FR-002 | Each guest tablet MUST authenticate with a role-specific access credential issued by the server. A guest route MUST NOT allow ceremony actions until a valid session for that same role exists.                          | TS-06, TS-19 |
-| FR-003 | The main display MUST authenticate with a display credential and MUST only receive read access (no ceremony actions).                                                                                                    | TS-06, TS-19 |
-| FR-004 | The admin dashboard MUST authenticate with an admin credential before showing controls or data.                                                                                                                          | TS-17, TS-19 |
+| ID     | Requirement                                                                                                                                                                                         | Tests        |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| FR-001 | The web app MUST provide the routes `/` (ceremony display), `/guest/1`, `/guest/2`, `/guest/3` and `/admin`. The display is a browser page. A projector only mirrors or extends that laptop screen. | TS-19        |
+| FR-002 | Each guest tablet MUST authenticate with a role-specific access credential issued by the server. A guest route MUST NOT allow ceremony actions until a valid session for that same role exists.     | TS-06, TS-19 |
+| FR-003 | The main display MUST authenticate with a display credential and MUST only receive read access (no ceremony actions).                                                                               | TS-06, TS-19 |
+| FR-004 | The admin dashboard MUST authenticate with an admin credential before showing controls or data.                                                                                                     | TS-17, TS-19 |
 
 ### Guest activation
 

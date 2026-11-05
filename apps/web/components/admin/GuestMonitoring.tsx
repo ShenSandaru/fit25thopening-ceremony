@@ -120,8 +120,8 @@ export function GuestMonitoring({ state, devices, availability }: GuestMonitorin
               </div>
 
               <div className="mt-5 border-t border-slate-200/60 pt-3">
-                <span className="text-[11px] text-slate-400">
-                  Role: <span className="font-mono">{role}</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  Station: {generic.station} · {generic.position}
                 </span>
               </div>
             </div>

@@ -149,7 +149,7 @@ Lets a page check whether it already has a session, and for which role.
 - `200`: `{ ok: true, data: { role: Role; expiresAt: number } }`
 - Errors: `UNAUTHORIZED`.
 
-A client page MUST verify that the session role matches the route (for example, `/guest/dean` requires `dean`) and otherwise show the login form. This is a UX check only; the server enforces permissions independently.
+A client page MUST verify that the session role matches the route (for example, `/guest/3` requires `dean`) and otherwise show the station assignment options. This is a UX check only; the server enforces permissions independently.
 
 ### `GET /api/event/state`
 

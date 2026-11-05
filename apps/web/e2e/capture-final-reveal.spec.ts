@@ -1,9 +1,9 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 const GUESTS = [
-  { role: "chief", label: "Chief Guest" },
-  { role: "vice-chancellor", label: "Vice Chancellor" },
-  { role: "dean", label: "Dean of Information Technology" },
+  { role: "chief", label: "Guest 1", route: "/guest/1" },
+  { role: "vice-chancellor", label: "Guest 2", route: "/guest/2" },
+  { role: "dean", label: "Guest 3", route: "/guest/3" },
 ] as const;
 
 const RESOLUTIONS = [
@@ -46,8 +46,8 @@ test("capture final launch reveal at all 5 target resolutions", async ({ browser
       const page = await context.newPage();
       tablets.push(page);
       await page.goto("/guest");
-      await page.getByRole("button", { name: guest.label }).click();
-      await expect(page).toHaveURL(new RegExp(`/guest/${guest.role}$`));
+      await page.getByRole("button", { name: new RegExp(guest.label) }).click();
+      await expect(page).toHaveURL(new RegExp(`${guest.route}$`));
     }
 
     // Activate all 3 guests

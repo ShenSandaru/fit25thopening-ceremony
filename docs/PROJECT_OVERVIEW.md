@@ -19,20 +19,20 @@ A ceremonial "joint opening" needs to feel simultaneous and reliable in front of
 
 ## 3. User roles
 
-| Role ID           | Person                                      | Device                                                     | Interface                |
-| ----------------- | ------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
-| `chief`           | Chief Guest                                 | Tablet                                                     | `/guest/chief`           |
-| `vice-chancellor` | Vice Chancellor                             | Tablet                                                     | `/guest/vice-chancellor` |
-| `dean`            | Dean, Faculty of IT                         | Tablet                                                     | `/guest/dean`            |
-| `display`         | Audience, operated from the ceremony laptop | Laptop browser; a projector mirrors or extends that screen | `/`                      |
-| `admin`           | Event organizer / technical operator        | Laptop or tablet                                           | `/admin`                 |
+| Role ID           | Public Identity                             | Device                                                     | Interface  |
+| ----------------- | ------------------------------------------- | ---------------------------------------------------------- | ---------- |
+| `chief`           | Guest 1 (Left Station)                      | Tablet                                                     | `/guest/1` |
+| `vice-chancellor` | Guest 2 (Center Station)                    | Tablet                                                     | `/guest/2` |
+| `dean`            | Guest 3 (Right Station)                     | Tablet                                                     | `/guest/3` |
+| `display`         | Audience, operated from the ceremony laptop | Laptop browser; a projector mirrors or extends that screen | `/`        |
+| `admin`           | Event organizer / technical operator        | Laptop or tablet                                           | `/admin`   |
 
-The three guest roles are collectively called **guests**. Guest display names and titles are configuration, not code, and are still to be confirmed (see [PLAN.md](../PLAN.md), open decisions).
+The three guest roles are collectively called **guests**. Publicly, they are identified strictly as **Guest 1**, **Guest 2**, and **Guest 3** without exposing personal names or institutional designations.
 
 ## 4. System interfaces
 
 1. **Main Display (`/`)**: a normal browser page on the ceremony laptop. The projector shows that same screen, either mirrored or as an extended display. The page shows a branded waiting screen, the three activation indicators, the countdown, the opening animation and the final opening screen. Animation and audio play in that browser. It does not control the projector.
-2. **Guest tablets (`/guest/chief`, `/guest/vice-chancellor`, `/guest/dean`)**: each shows a single slide-to-activate control, enabled only while the server is collecting activations, plus clear confirmation once the server has accepted that guest's activation.
+2. **Guest tablets (`/guest/1`, `/guest/2`, `/guest/3`)**: each shows a single slide-to-activate control, enabled only while the server is collecting activations, plus clear confirmation once the server has accepted that guest's activation.
 3. **Admin Dashboard (`/admin`)**: lets organizers prepare the event, open the activation phase, monitor guests and devices, abort, reset, view activity, and perform an authorized emergency manual start.
 
 All five interfaces are served by one Next.js application and talk to one Express + Socket.IO server.
