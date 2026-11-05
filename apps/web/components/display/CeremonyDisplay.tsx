@@ -71,6 +71,25 @@ export function CeremonyDisplay() {
     };
   }, []);
 
+  async function switchFromGuestToDisplay() {
+    setClaim("pending");
+    await fetch("/api/guest-sessions/release", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    }).catch(() => undefined);
+    const response = await fetch("/api/display-sessions/claim", {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => null);
+    if (response?.ok) {
+      setClaim("ready");
+    } else {
+      setClaim("guest-browser");
+    }
+  }
+
   async function begin() {
     await channel.audioRef.current?.unlock("waiting");
     await fetch("/api/event/begin-activations", {
@@ -140,6 +159,13 @@ export function CeremonyDisplay() {
               <p className="font-mono text-white/70">
                 This browser instance is currently linked to an active guest tablet session.
               </p>
+              <button
+                type="button"
+                className="display-control mt-2 text-xs sm:text-sm bg-gold/20 border-gold hover:bg-gold/30 text-gold font-bold transition-all"
+                onClick={() => void switchFromGuestToDisplay()}
+              >
+                Release Guest Session &amp; Open Main Display
+              </button>
             </div>
           ) : view === "welcome" ? (
             <div className="display-enter flex flex-col items-center justify-center gap-[clamp(0.5rem,1.8vh,1.5rem)] max-w-4xl px-4 select-none">
