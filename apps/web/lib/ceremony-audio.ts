@@ -14,9 +14,9 @@ export const CEREMONY_AUDIO_CONFIG = {
     activation: "/audio/placeholders/activation.wav",
     countdown: "/audio/placeholders/countdown.wav",
     sync: "/audio/placeholders/voiceover.wav",
-    impact: "/audio/placeholders/opening.mp3",
+    impact: "/audio/placeholders/fitexpo.wav",
     voiceover: "/audio/placeholders/voiceover.wav",
-    opening: "/audio/placeholders/opening.mp3",
+    opening: "/audio/placeholders/fitexpo.wav",
     ambient: "/audio/placeholders/ambient.wav",
   },
   volumes: {
@@ -26,12 +26,14 @@ export const CEREMONY_AUDIO_CONFIG = {
     countdownCues: 0.65, // 55–70%
     finalLaunchMusic: 0.5, // 40–55%
     syncTransition: 0.55, // 50–60%
-    impactCue: 1.0, // 100% full-power celebratory launch blast
+    impactCue: 1.0, // 100% full-power celebratory launch voiceover
   },
   fades: {
     standardMs: 800,
     quickCutMs: 250,
-    launchFadeInMs: 1200,
+    launchFadeInMs: 2000,
+    voiceoverHoldMs: 4500,
+    voiceoverFadeOutMs: 2000,
   },
 } as const;
 
@@ -337,6 +339,12 @@ export class CeremonyAudio {
             ? CEREMONY_AUDIO_CONFIG.volumes.syncTransition
             : CEREMONY_AUDIO_CONFIG.volumes.impactCue;
 
+    if (name === "impact" || name === "opening") {
+      // Keep background music paused while the 4.5-second inauguration voiceover plays
+      this.pauseBackground(true);
+      this.clearFadeForClip(clip);
+    }
+
     try {
       clip.loop = false;
       clip.volume = volume;
@@ -344,6 +352,19 @@ export class CeremonyAudio {
       void clip.play().catch(() => {
         this.markUnavailable();
       });
+
+      if (name === "impact" || name === "opening") {
+        // After 4.5 seconds of the fitexpo.wav voice clip, gradually reduce its sound
+        // and smoothly continue the previous background music track.
+        const holdTimer = setTimeout(() => {
+          this.fadeVolume(clip, 0, CEREMONY_AUDIO_CONFIG.fades.voiceoverFadeOutMs, () => {
+            clip.pause();
+            clip.currentTime = 0;
+          });
+          void this.resumeBackground("launch");
+        }, CEREMONY_AUDIO_CONFIG.fades.voiceoverHoldMs);
+        this.timers.push(holdTimer);
+      }
     } catch {
       this.markUnavailable();
     }

@@ -109,8 +109,9 @@ export function useCeremonyChannel(
           // Immediately mute / pause background music when countdown commences
           audioRef.current?.pauseBackground(true);
         } else if (incoming.status === "OPENED") {
-          // Stop background music completely and play the one-time celebratory blast sound
-          audioRef.current?.stopBackground(true);
+          // Pause background music during the 4.5-second fitexpo.wav voiceover;
+          // playCue("impact") automatically fades out fitexpo.wav after 4.5s and resumes bg_music.mp3
+          audioRef.current?.pauseBackground(true);
           audioRef.current?.playCue("impact");
         } else if (incoming.status === "ABORTED") {
           audioRef.current?.stop();
@@ -173,7 +174,7 @@ export function useCeremonyChannel(
       if (current && (payload.runId !== current.runId || payload.version < current.version)) {
         return;
       }
-      audioRef.current?.stopBackground(true);
+      audioRef.current?.pauseBackground(true);
       audioRef.current?.playCue("impact");
     });
 
