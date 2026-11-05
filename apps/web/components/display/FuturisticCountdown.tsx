@@ -13,7 +13,7 @@ export function FuturisticCountdown({ seconds }: FuturisticCountdownProps) {
     <div className="relative z-20 flex w-full max-w-4xl flex-col items-center justify-center gap-6 py-2 text-center">
       {/* Central Rotating Robotic Core with Nested Holographic Digit */}
       <div className="relative flex items-center justify-center">
-        <RoboticEnergyCore activatedCount={3} isCountdown countdownSeconds={currentDigit} />
+        <RoboticEnergyCore activatedCount={3} isCountdown />
 
         {/* Dynamic Holographic Countdown Digit Frame */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -44,9 +44,9 @@ export function FuturisticCountdown({ seconds }: FuturisticCountdownProps) {
           </p>
         </div>
 
-        {/* 3-2-1 Progress Indicators */}
-        <div className="flex items-center gap-4 mt-1">
-          {[3, 2, 1].map((step) => {
+        {/* 5-4-3-2-1 Progress Indicators */}
+        <div className="flex items-center gap-3 sm:gap-4 mt-1">
+          {[5, 4, 3, 2, 1].map((step) => {
             const isPassedOrCurrent = currentDigit <= step;
             return (
               <div

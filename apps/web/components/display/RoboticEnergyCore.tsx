@@ -6,7 +6,6 @@ type RoboticEnergyCoreProps = {
   activatedCount: number; // 0, 1, 2, 3
   isCountdown?: boolean;
   isOpened?: boolean;
-  countdownSeconds?: number | null;
   compact?: boolean;
 };
 
@@ -14,7 +13,6 @@ export function RoboticEnergyCore({
   activatedCount,
   isCountdown = false,
   isOpened = false,
-  countdownSeconds = null,
   compact = false,
 }: RoboticEnergyCoreProps) {
   const isFullyCharged = activatedCount === 3 || isCountdown || isOpened;
@@ -228,14 +226,7 @@ export function RoboticEnergyCore({
 
       {/* Center Readout Text / Countdown Digit / University Logo on Opened */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-        {isCountdown ? (
-          <span
-            key={countdownSeconds}
-            className="font-heading text-7xl sm:text-9xl font-extrabold tabular-nums tracking-tighter text-white drop-shadow-[0_0_35px_#c9a227] animate-[display-digit_450ms_ease]"
-          >
-            {countdownSeconds}
-          </span>
-        ) : isOpened ? (
+        {isCountdown ? null : isOpened ? (
           <div className="relative flex items-center justify-center size-[38%] p-1 select-none">
             {/* Subtle neutral-white & cyan aura behind the crest */}
             <div
