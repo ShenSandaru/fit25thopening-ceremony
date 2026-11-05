@@ -1,5 +1,5 @@
 import { GuestExperience } from "@/components/guest/GuestExperience";
 
-export default function DeanPage() {
+export default function Guest3Page() {
   return <GuestExperience expectedRole="dean" />;
 }

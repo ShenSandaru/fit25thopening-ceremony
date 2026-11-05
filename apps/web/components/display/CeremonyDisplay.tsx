@@ -57,6 +57,7 @@ export function CeremonyDisplay() {
   }, []);
 
   async function begin() {
+    await channel.audioRef.current?.unlock("waiting");
     await fetch("/api/event/begin-activations", {
       method: "POST",
       credentials: "include",
@@ -75,7 +76,13 @@ export function CeremonyDisplay() {
     } catch {
       // Fullscreen can be denied; ceremony continues.
     }
-    await channel.audioRef.current?.unlock();
+    const initialTrack =
+      channel.ceremony?.status === "COLLECTING_ACTIVATIONS"
+        ? "waiting"
+        : channel.ceremony?.status === "OPENED"
+          ? "launch"
+          : undefined;
+    await channel.audioRef.current?.unlock(initialTrack);
   }
 
   return (
@@ -176,7 +183,7 @@ export function CeremonyDisplay() {
                 </p>
               </div>
 
-              {/* Holographic Handprint Stations for Chief, VC, Dean */}
+              {/* Holographic Handprint Stations for Guest 1, Guest 2, Guest 3 */}
               <HolographicHandprints state={channel.ceremony} devices={channel.devices} />
             </div>
           ) : view === "all-activated" ? (

@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 type RoboticEnergyCoreProps = {
   activatedCount: number; // 0, 1, 2, 3
   isCountdown?: boolean;
@@ -33,12 +35,14 @@ export function RoboticEnergyCore({
     <div
       className={`relative flex items-center justify-center transition-transform duration-700 ${coreScale}`}
     >
-      {/* Outer Glow Halo */}
+      {/* Outer Glow Halo - Refined to preserve deep navy background without heavy yellow cast */}
       <div
         aria-hidden="true"
         className={`absolute rounded-full transition-all duration-1000 ${
           isOpened
-            ? "size-[360px] sm:size-[460px] bg-gold/30 blur-3xl animate-pulse"
+            ? compact
+              ? "size-[200px] sm:size-[250px] bg-radial from-gold/15 via-cyan-500/10 to-transparent blur-2xl animate-pulse"
+              : "size-[300px] sm:size-[380px] bg-radial from-gold/20 via-cyan-500/10 to-transparent blur-3xl animate-pulse"
             : isCountdown
               ? "size-[300px] sm:size-[380px] bg-gold/25 blur-2xl animate-pulse"
               : activatedCount > 0
@@ -160,14 +164,39 @@ export function RoboticEnergyCore({
           />
         </g>
 
-        {/* 4. Central Glowing Plasma Core Sphere */}
-        <circle
-          cx="200"
-          cy="200"
-          r="84"
-          fill="url(#plasmaCore)"
-          className="transition-all duration-1000"
-        />
+        {/* 4. Central Reactor Core / University Logo Pedestal */}
+        {isOpened ? (
+          <>
+            {/* Deep Navy/Black Base Disk with Gold Tech Rim */}
+            <circle
+              cx="200"
+              cy="200"
+              r="84"
+              fill="#061224"
+              stroke="#c9a227"
+              strokeWidth="1.5"
+              className="transition-all duration-1000"
+            />
+            {/* Inner Concentric Tech Notches Ring */}
+            <circle
+              cx="200"
+              cy="200"
+              r="76"
+              fill="none"
+              stroke="rgba(0, 240, 255, 0.45)"
+              strokeWidth="1"
+              strokeDasharray="6 6"
+            />
+          </>
+        ) : (
+          <circle
+            cx="200"
+            cy="200"
+            r="84"
+            fill="url(#plasmaCore)"
+            className="transition-all duration-1000"
+          />
+        )}
 
         {/* Dynamic Energy Level Arc */}
         <circle
@@ -185,21 +214,19 @@ export function RoboticEnergyCore({
           filter="url(#glow)"
         />
 
-        {/* Laser Crosshair Reticles in Core Center */}
-        <g
-          stroke={glowColor}
-          strokeWidth="1"
-          opacity={activatedCount > 0 || isOpened ? "0.2" : "0.4"}
-        >
-          <line x1="200" y1="170" x2="200" y2="185" />
-          <line x1="200" y1="215" x2="200" y2="230" />
-          <line x1="170" y1="200" x2="185" y2="200" />
-          <line x1="215" y1="200" x2="230" y2="200" />
-          <circle cx="200" cy="200" r="12" fill="none" />
-        </g>
+        {/* Laser Crosshair Reticles in Core Center - Hidden on Launch to preserve Crest clarity */}
+        {!isOpened && (
+          <g stroke={glowColor} strokeWidth="1" opacity={activatedCount > 0 ? "0.2" : "0.4"}>
+            <line x1="200" y1="170" x2="200" y2="185" />
+            <line x1="200" y1="215" x2="200" y2="230" />
+            <line x1="170" y1="200" x2="185" y2="200" />
+            <line x1="215" y1="200" x2="230" y2="200" />
+            <circle cx="200" cy="200" r="12" fill="none" />
+          </g>
+        )}
       </svg>
 
-      {/* Center Readout Text / Countdown Digit */}
+      {/* Center Readout Text / Countdown Digit / University Logo on Opened */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
         {isCountdown ? (
           <span
@@ -209,13 +236,20 @@ export function RoboticEnergyCore({
             {countdownSeconds}
           </span>
         ) : isOpened ? (
-          <div className="flex flex-col items-center gap-0.5 animate-pulse">
-            <span className="font-mono text-[10px] sm:text-xs tracking-widest text-gold uppercase drop-shadow">
-              REACTOR
-            </span>
-            <span className="font-heading text-xl sm:text-2xl font-extrabold text-white tracking-wider drop-shadow-[0_0_10px_#c9a227]">
-              ONLINE
-            </span>
+          <div className="relative flex items-center justify-center size-[38%] p-1 select-none">
+            {/* Subtle neutral-white & cyan aura behind the crest */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full bg-radial from-white/20 via-cyan-400/10 to-transparent blur-md animate-aura-pulse"
+            />
+            <Image
+              src="/images/University_of_Moratuwa_logo.png"
+              alt="University of Moratuwa Official Logo"
+              width={160}
+              height={160}
+              priority
+              className="relative z-10 size-full object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.7)] transition-transform duration-700"
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-0.5">

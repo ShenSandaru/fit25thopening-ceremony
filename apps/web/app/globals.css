@@ -99,12 +99,65 @@
   }
 }
 
+@keyframes ambient-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate(-2.5%, 2%) scale(1.06);
+    opacity: 0.95;
+  }
+}
+
+@keyframes light-sweep-slow {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  75% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes aura-pulse {
+  0%,
+  100% {
+    transform: scale(0.97);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
 .animate-scanline {
   animation: scanline 2.2s ease-in-out infinite;
 }
 
 .animate-laser-sweep {
   animation: laser-sweep 1.8s ease-in-out infinite;
+}
+
+.animate-light-sweep-slow {
+  animation: light-sweep-slow 7s ease-in-out infinite;
+}
+
+.animate-ambient-drift {
+  animation: ambient-drift 14s ease-in-out infinite;
+}
+
+.animate-aura-pulse {
+  animation: aura-pulse 3.5s ease-in-out infinite;
 }
 
 .animate-shockwave {
@@ -142,6 +195,9 @@ html:fullscreen button {
   .display-digit,
   .animate-scanline,
   .animate-laser-sweep,
+  .animate-light-sweep-slow,
+  .animate-ambient-drift,
+  .animate-aura-pulse,
   .animate-shockwave,
   .animate-core-glow {
     animation: none;

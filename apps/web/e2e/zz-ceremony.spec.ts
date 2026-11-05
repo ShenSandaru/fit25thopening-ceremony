@@ -1,9 +1,9 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 const GUESTS = [
-  { role: "chief", label: "Chief Guest" },
-  { role: "vice-chancellor", label: "Vice Chancellor" },
-  { role: "dean", label: "Dean of Information Technology" },
+  { role: "chief", label: "Guest 1", route: "/guest/1" },
+  { role: "vice-chancellor", label: "Guest 2", route: "/guest/2" },
+  { role: "dean", label: "Guest 3", route: "/guest/3" },
 ] as const;
 
 async function release(page: Page) {
@@ -37,8 +37,8 @@ test("three guests open the ceremony on the display", async ({ browser }) => {
       const page = await context.newPage();
       tablets.push(page);
       await page.goto("/guest");
-      await page.getByRole("button", { name: guest.label }).click();
-      await expect(page).toHaveURL(new RegExp(`/guest/${guest.role}$`));
+      await page.getByRole("button", { name: new RegExp(guest.label) }).click();
+      await expect(page).toHaveURL(new RegExp(`${guest.route}$`));
     }
 
     await tablets[0]!.getByRole("button", { name: "Activate with keyboard" }).click();
@@ -59,10 +59,10 @@ test("three guests open the ceremony on the display", async ({ browser }) => {
       ),
     ).toBeVisible();
     await expect(display.locator("[data-display-view=opened]")).toBeVisible({ timeout: 20_000 });
-    await expect(display.getByRole("heading", { name: "FIT Expo Opening Ceremony" })).toBeVisible();
+    await expect(display.getByRole("heading", { name: "FIT EXPO Opening Ceremony" })).toBeVisible();
 
     await tablets[0]!.reload();
-    await expect(tablets[0]!.getByText("The FIT Expo is open.")).toBeVisible();
+    await expect(tablets[0]!.getByText("The FIT EXPO is open.")).toBeVisible();
   } finally {
     for (const context of contexts) {
       const pages = context.pages();

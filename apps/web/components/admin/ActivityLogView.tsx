@@ -1,12 +1,20 @@
 "use client";
 
 import type { ActivityEntry, ActivityType } from "@fit-expo/shared";
+import { formatGuestRole } from "@/lib/guest-config";
 
 type ActivityLogViewProps = {
   entries: ActivityEntry[];
   onRefresh: () => Promise<void>;
   busy: boolean;
 };
+
+function formatLogMessage(message: string): string {
+  return message
+    .replace(/\bchief\b/gi, "Guest 1")
+    .replace(/\bvice-chancellor\b/gi, "Guest 2")
+    .replace(/\bdean\b/gi, "Guest 3");
+}
 
 const BADGE_COLORS: Record<ActivityType, { bg: string; text: string }> = {
   STATE_CHANGED: { bg: "bg-blue-100", text: "text-navy-blue" },
@@ -67,12 +75,12 @@ export function ActivityLogView({ entries, onRefresh, busy }: ActivityLogViewPro
                   >
                     {entry.type}
                   </span>
-                  <p className="font-medium text-slate-800">{entry.message}</p>
+                  <p className="font-medium text-slate-800">{formatLogMessage(entry.message)}</p>
                 </div>
 
                 {entry.actorRole && (
                   <span className="font-mono text-[11px] text-slate-400 shrink-0">
-                    actor: {entry.actorRole}
+                    actor: {formatGuestRole(entry.actorRole)}
                   </span>
                 )}
               </div>

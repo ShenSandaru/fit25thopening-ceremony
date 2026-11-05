@@ -25,13 +25,14 @@ If a requirement is ambiguous or conflicts with these documents, stop and ask ra
 
 A synchronized, web-based opening ceremony. Three guests (Chief Guest, Vice Chancellor, Dean of IT) each slide to activate on their own tablet. Only after the **server** has accepted all three activations does it start a 5-second countdown; the main display then plays the opening animation and shows the official FIT Expo opening screen. An admin dashboard lets organizers control and monitor the ceremony.
 
-| Interface              | Route                    | Role              |
-| ---------------------- | ------------------------ | ----------------- |
-| Main Display           | `/`                      | `display`         |
-| Chief Guest tablet     | `/guest/chief`           | `chief`           |
-| Vice Chancellor tablet | `/guest/vice-chancellor` | `vice-chancellor` |
-| Dean of IT tablet      | `/guest/dean`            | `dean`            |
-| Admin Dashboard        | `/admin`                 | `admin`           |
+| Interface               | Route      | Role              |
+| ----------------------- | ---------- | ----------------- |
+| Main Display            | `/`        | `display`         |
+| Guest 1 tablet (Left)   | `/guest/1` | `chief`           |
+| Guest 2 tablet (Center) | `/guest/2` | `vice-chancellor` |
+| Guest 3 tablet (Right)  | `/guest/3` | `dean`            |
+| Tablet Station Selector | `/guest`   | unassigned        |
+| Admin Dashboard         | `/admin`   | `admin`           |
 
 Business rule: the countdown starts only when `chief`, `vice-chancellor` and `dean` all have server-accepted activations, or after an authorized emergency manual start.
 

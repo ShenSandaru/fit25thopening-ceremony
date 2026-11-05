@@ -151,7 +151,7 @@ flowchart LR
 | P3-T04 | Socket.IO handshake from the device-session cookie, rooms, `socket.data.role`, `guest:activate`          | DONE   |
 | P3-T05 | Same-origin API and Socket.IO via Next.js rewrites (cookie stays first-party)                            | DONE   |
 | P3-T06 | `/guest` role selection (not a password form). Organizer hands each tablet to the named guest            | DONE   |
-| P3-T07 | Guest routes `/guest/chief`, `/guest/vice-chancellor`, `/guest/dean` with session role check             | DONE   |
+| P3-T07 | Guest routes `/guest/1`, `/guest/2`, `/guest/3` with session role check                                  | DONE   |
 | P3-T08 | `SlideToActivate` (pointer events, keyboard alternative) wired to `guest:activate`                       | DONE   |
 | P3-T09 | Connection indicator component                                                                           | DONE   |
 | P3-T10 | Integration tests for assignment, duplicate role, forged payload, unauthenticated socket                 | DONE   |

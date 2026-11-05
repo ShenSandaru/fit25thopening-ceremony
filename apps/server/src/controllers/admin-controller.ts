@@ -182,18 +182,29 @@ export function createReleaseRoleHandler(
         return;
       }
 
+      const guestLabel =
+        role === "chief"
+          ? "Guest 1"
+          : role === "vice-chancellor"
+            ? "Guest 2"
+            : role === "dean"
+              ? "Guest 3"
+              : role;
+
       const ceremonyState = ceremony.getState();
       if (ceremonyState.activations[role] !== null) {
         throw new DomainError(
           "INVALID_TRANSITION",
-          `Cannot release tablet session for ${role}: this guest has already activated in the ceremony run.`,
+          `Cannot release tablet session for ${guestLabel}: this guest has already activated in the ceremony run.`,
           { role },
         );
       }
 
       const released = sessions.releaseRole(role);
       if (!released) {
-        res.status(404).json(err("VALIDATION_ERROR", `No active session found for role ${role}.`));
+        res
+          .status(404)
+          .json(err("VALIDATION_ERROR", `No active session found for role ${guestLabel}.`));
         return;
       }
 
@@ -202,7 +213,7 @@ export function createReleaseRoleHandler(
       const entry = activityLog.append({
         type: "ADMIN_ACTION",
         actorRole: "admin",
-        message: `Organizer released tablet session for ${role}`,
+        message: `Organizer released tablet session for ${guestLabel}`,
         data: { role },
       });
       onActivity?.(entry);

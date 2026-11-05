@@ -52,10 +52,10 @@ test.describe("Admin Dashboard E2E", () => {
       await adminPage.goto("/admin");
       await expect(adminPage.getByRole("heading", { name: /Organizer Dashboard/i })).toBeVisible();
 
-      // Tablet assigns Dean role
+      // Tablet assigns Guest 3 role (internal: dean)
       await tabletPage.goto("/guest");
-      await tabletPage.getByRole("button", { name: "Dean of Information Technology" }).click();
-      await expect(tabletPage).toHaveURL(/\/guest\/dean$/);
+      await tabletPage.getByRole("button", { name: /Guest 3/ }).click();
+      await expect(tabletPage).toHaveURL(/\/guest\/3$/);
 
       // Admin dashboard reflects Dean tablet assignment
       const deanCard = adminPage.locator("[data-guest-card=dean]");
@@ -92,7 +92,7 @@ test.describe("Admin Dashboard E2E", () => {
     try {
       await displayPage.goto("/");
       await expect(displayPage.locator("main[data-display-view]")).toBeVisible();
-      await expect(displayPage.getByText("Faculty of Information Technology")).toBeVisible();
+      await expect(displayPage.getByRole("heading", { name: /FIT EXPO/i })).toBeVisible();
 
       await adminPage.goto("/admin");
       await expect(adminPage.getByRole("heading", { name: /Organizer Dashboard/i })).toBeVisible();

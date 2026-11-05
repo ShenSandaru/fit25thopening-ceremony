@@ -9,9 +9,9 @@ The system is a **TypeScript pnpm monorepo** with one Next.js frontend, one Expr
 ```mermaid
 flowchart LR
   subgraph clients [Browsers on venue network]
-    Chief["/guest/chief"]
-    VC["/guest/vice-chancellor"]
-    Dean["/guest/dean"]
+    Guest1["/guest/1 (Guest 1)"]
+    Guest2["/guest/2 (Guest 2)"]
+    Guest3["/guest/3 (Guest 3)"]
     Display["/ ceremony laptop browser"]
     AdminUI["/admin"]
   end

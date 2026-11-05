@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCeremonyChannel } from "@/hooks/use-ceremony-channel";
 import { countdownSecondsRemaining } from "@/lib/ceremony-sync";
-import { GENERIC_GUEST_LABELS, GUEST_LABELS, viewFromCeremony } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS, viewFromCeremony } from "@/lib/guest-config";
 import { ConnectionIndicator } from "./ConnectionIndicator";
 import { SlideToActivate } from "./SlideToActivate";
 
@@ -16,7 +16,6 @@ type GuestExperienceProps = {
 
 export function GuestExperience({ expectedRole }: GuestExperienceProps) {
   const router = useRouter();
-  const label = GUEST_LABELS[expectedRole];
   const generic = GENERIC_GUEST_LABELS[expectedRole];
 
   const [assignedRole, setAssignedRole] = useState<GuestRole | "display" | null | undefined>(
@@ -108,13 +107,13 @@ export function GuestExperience({ expectedRole }: GuestExperienceProps) {
         <span className="size-2 rounded-full bg-gold" />
       </div>
 
-      {/* Generic Station & Designation Heading */}
+      {/* Generic Station Heading */}
       <div className="relative z-10 flex flex-col items-center gap-1">
         <span className="font-mono text-xs font-bold tracking-[0.3em] text-gold uppercase">
           {generic.station} · {generic.position} POSITION
         </span>
         <h1
-          aria-label={label.title}
+          aria-label={generic.label}
           className="font-heading text-5xl sm:text-6xl font-black text-white tracking-wide drop-shadow-[0_0_20px_rgba(201,162,39,0.4)]"
         >
           {generic.label}
@@ -138,7 +137,7 @@ export function GuestExperience({ expectedRole }: GuestExperienceProps) {
       {assignedRole && assignedRole !== expectedRole && assignedRole !== "display" ? (
         <a
           className="font-mono text-sm text-gold underline underline-offset-4"
-          href={`/guest/${assignedRole}`}
+          href={GENERIC_GUEST_LABELS[assignedRole].route}
         >
           This tablet is assigned to {GENERIC_GUEST_LABELS[assignedRole].label}
         </a>
@@ -217,7 +216,7 @@ function messageFor(view: string, seconds: number | null): string {
         ? `The opening countdown has begun. ${seconds}`
         : "The opening countdown has begun.";
     case "completed":
-      return "The FIT Expo is open.";
+      return "The FIT EXPO is open.";
     case "aborted":
       return "The ceremony was stopped.";
     case "disconnected":

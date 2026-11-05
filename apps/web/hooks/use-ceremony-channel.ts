@@ -4,6 +4,7 @@ import {
   CLIENT_EVENTS,
   SERVER_EVENTS,
   type CeremonyState,
+  type CeremonyStatus,
   type ClientToServerEvents,
   type ClockSyncAck,
   type DeviceStatus,
@@ -40,6 +41,11 @@ export function useCeremonyChannel(
   const audioRef = useRef<CeremonyAudio | null>(null);
   const scheduledRun = useRef<string | null>(null);
 
+  // Audio deduplication and run tracking
+  const playedActivations = useRef<Map<string, Set<string>>>(new Map());
+  const currentRunId = useRef<string | null>(null);
+  const currentStatus = useRef<CeremonyStatus | null>(null);
+
   useEffect(() => {
     const created = new CeremonyAudio();
     created.onChange = () => setAudioUnavailable(created.unavailable);
@@ -74,6 +80,41 @@ export function useCeremonyChannel(
       }
       ceremonyRef.current = accepted;
       setCeremony(accepted);
+
+      // Reset activation deduplication tracking if runId changes (e.g. ceremony reset)
+      if (incoming.runId !== currentRunId.current) {
+        currentRunId.current = incoming.runId;
+        const initialSet = new Set<string>();
+        // Populate existing activations without re-triggering sound effects
+        if (incoming.activations) {
+          for (const [roleName, act] of Object.entries(incoming.activations)) {
+            if (act !== null) {
+              initialSet.add(roleName);
+            }
+          }
+        }
+        playedActivations.current.set(incoming.runId, initialSet);
+      }
+
+      // Handle background audio transition on ceremony state changes
+      if (cues && incoming.status !== currentStatus.current) {
+        currentStatus.current = incoming.status;
+
+        if (incoming.status === "WAITING" || incoming.status === "READY") {
+          // Keep welcome / standby silent; music starts after clicking begin activations
+          audioRef.current?.stopBackground(true);
+        } else if (incoming.status === "COLLECTING_ACTIVATIONS") {
+          void audioRef.current?.playBackground("waiting");
+        } else if (incoming.status === "COUNTDOWN") {
+          // Immediately mute / pause background music when countdown commences
+          audioRef.current?.pauseBackground(true);
+        } else if (incoming.status === "OPENED") {
+          // Resume background music after countdown is over
+          void audioRef.current?.resumeBackground("launch");
+        } else if (incoming.status === "ABORTED") {
+          audioRef.current?.stop();
+        }
+      }
     };
 
     const syncClock = () => {
@@ -95,6 +136,7 @@ export function useCeremonyChannel(
     next.on("disconnect", () => setConnected(false));
     next.on(SERVER_EVENTS.EVENT_STATE, apply);
     next.on(SERVER_EVENTS.DEVICE_STATUS, (payload) => setDevices(payload.devices));
+
     next.on(SERVER_EVENTS.GUEST_ACTIVATED, (payload) => {
       if (!cues) {
         return;
@@ -103,8 +145,25 @@ export function useCeremonyChannel(
       if (current && (payload.runId !== current.runId || payload.version < current.version)) {
         return;
       }
-      audioRef.current?.play("activation");
+
+      // Guarantee each guest activation sound is triggered only once
+      let set = playedActivations.current.get(payload.runId);
+      if (!set) {
+        set = new Set();
+        playedActivations.current.set(payload.runId, set);
+      }
+      if (set.has(payload.role)) {
+        return;
+      }
+      set.add(payload.role);
+      audioRef.current?.playCue("activation");
+
+      // Stage D: Play synchronization transition cue when all 3 guests are activated
+      if (payload.activatedCount === 3) {
+        audioRef.current?.playCue("sync");
+      }
     });
+
     next.on(SERVER_EVENTS.EVENT_OPENED, (payload) => {
       if (!cues) {
         return;
@@ -113,8 +172,9 @@ export function useCeremonyChannel(
       if (current && (payload.runId !== current.runId || payload.version < current.version)) {
         return;
       }
-      audioRef.current?.play("opening");
+      void audioRef.current?.resumeBackground("launch");
     });
+
     next.on(SERVER_EVENTS.EVENT_ABORTED, () => {
       audioRef.current?.stop();
       scheduledRun.current = null;

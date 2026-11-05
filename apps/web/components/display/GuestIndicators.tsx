@@ -4,7 +4,7 @@ import {
   type DeviceStatus,
   type GuestRole,
 } from "@fit-expo/shared";
-import { GUEST_LABELS } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS } from "@/lib/guest-config";
 import { guestIndicatorStatus, type GuestIndicatorStatus } from "@/lib/ceremony-sync";
 
 const COPY: Record<GuestIndicatorStatus, string> = {
@@ -49,7 +49,9 @@ function GuestLamp({ role, status }: { role: GuestRole; status: GuestIndicatorSt
               : "border-white/40 bg-transparent"
         }`}
       />
-      <p className="font-heading text-5xl font-semibold text-white">{GUEST_LABELS[role].title}</p>
+      <p className="font-heading text-5xl font-semibold text-white">
+        {GENERIC_GUEST_LABELS[role].label}
+      </p>
       <p className="text-3xl text-white/80">{COPY[status]}</p>
     </li>
   );
