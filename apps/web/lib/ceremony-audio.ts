@@ -6,9 +6,9 @@ import { countdownCueDelays } from "./ceremony-sync";
  */
 export const CEREMONY_AUDIO_CONFIG = {
   tracks: {
-    welcome: "/audio/placeholders/ambient.wav",
-    waiting: "/audio/placeholders/Bluewave - A Better Future (freetouse.com).mp3",
-    launch: "/audio/placeholders/Bluewave - A Better Future (freetouse.com).mp3",
+    welcome: "/audio/bg_music.mp3",
+    waiting: "/audio/bg_music.mp3",
+    launch: "/audio/bg_music.mp3",
   },
   cues: {
     activation: "/audio/placeholders/activation.wav",
@@ -56,9 +56,11 @@ export class CeremonyAudio {
   private readonly clips = new Map<string, AudioLike>();
   private readonly timers: ReturnType<typeof setTimeout>[] = [];
   private readonly fadeIntervals = new Set<ReturnType<typeof setInterval>>();
+  private readonly clipFadeIntervals = new Map<AudioLike, ReturnType<typeof setInterval>>();
   private audioCtx: AudioContext | null = null;
   private unlocked = false;
   private currentBgTrack: BackgroundTrackName | null = null;
+  private pausedBgTrack: BackgroundTrackName | null = null;
 
   unavailable = false;
   onChange: (() => void) | null = null;
@@ -103,8 +105,6 @@ export class CeremonyAudio {
     this.initAudioContext();
     if (initialTrack) {
       await this.playBackground(initialTrack);
-    } else {
-      await this.playBackground("welcome");
     }
   }
 
@@ -126,23 +126,8 @@ export class CeremonyAudio {
     const prevTrack = this.currentBgTrack;
     this.currentBgTrack = track;
 
-    // Smoothly fade out previous track if playing
-    if (prevTrack) {
-      const prevSrc = CEREMONY_AUDIO_CONFIG.tracks[prevTrack];
-      const prevClip = this.clips.get(prevSrc);
-      if (prevClip) {
-        this.fadeVolume(prevClip, 0, CEREMONY_AUDIO_CONFIG.fades.standardMs, () => {
-          prevClip.pause();
-        });
-      }
-    }
-
     const newSrc = CEREMONY_AUDIO_CONFIG.tracks[track];
-    const newClip = this.getOrCreateClip(newSrc, true);
-    if (!newClip) {
-      this.markUnavailable();
-      return;
-    }
+    const prevSrc = prevTrack ? CEREMONY_AUDIO_CONFIG.tracks[prevTrack] : null;
 
     const targetVolume =
       track === "welcome"
@@ -156,6 +141,46 @@ export class CeremonyAudio {
         ? CEREMONY_AUDIO_CONFIG.fades.launchFadeInMs
         : CEREMONY_AUDIO_CONFIG.fades.standardMs;
 
+    // If transitioning between stages that share the exact same audio asset
+    // (e.g. welcome -> waiting using bg_music.mp3), adjust volume smoothly
+    // without cutting, pausing, or restarting the track.
+    if (prevSrc && prevSrc === newSrc) {
+      const clip = this.clips.get(newSrc);
+      if (clip) {
+        this.fadeVolume(clip, targetVolume, CEREMONY_AUDIO_CONFIG.fades.standardMs);
+        return;
+      }
+    }
+
+    // Stop and fade out previous background track to prevent overlapping music
+    if (prevTrack) {
+      const prevClip = prevSrc ? this.clips.get(prevSrc) : null;
+      if (prevClip) {
+        this.fadeVolume(prevClip, 0, CEREMONY_AUDIO_CONFIG.fades.standardMs, () => {
+          prevClip.pause();
+        });
+      }
+    }
+
+    // Ensure any other background tracks that are not newSrc are fully paused and cleared
+    for (const src of Object.values(CEREMONY_AUDIO_CONFIG.tracks)) {
+      if (src !== newSrc && src !== prevSrc) {
+        const otherClip = this.clips.get(src);
+        if (otherClip) {
+          this.clearFadeForClip(otherClip);
+          otherClip.pause();
+          otherClip.volume = 0;
+        }
+      }
+    }
+
+    const newClip = this.getOrCreateClip(newSrc, true);
+    if (!newClip) {
+      this.markUnavailable();
+      return;
+    }
+
+    this.clearFadeForClip(newClip);
     newClip.loop = true;
     newClip.volume = 0;
     newClip.currentTime = 0;
@@ -169,9 +194,88 @@ export class CeremonyAudio {
   }
 
   /**
-   * Fades out or immediately halts background music (e.g. during countdown).
+   * Mutes and pauses background music (e.g. during countdown),
+   * preserving playback position so it can be resumed after countdown is over.
+   */
+  pauseBackground(immediate = false): void {
+    if (!this.currentBgTrack) {
+      return;
+    }
+    const currentSrc = CEREMONY_AUDIO_CONFIG.tracks[this.currentBgTrack];
+    this.pausedBgTrack = this.currentBgTrack;
+    this.currentBgTrack = null;
+    const clip = this.clips.get(currentSrc);
+    if (!clip) {
+      return;
+    }
+
+    if (immediate) {
+      this.clearFadeForClip(clip);
+      clip.pause();
+      clip.volume = 0;
+    } else {
+      this.fadeVolume(clip, 0, CEREMONY_AUDIO_CONFIG.fades.quickCutMs, () => {
+        clip.pause();
+      });
+    }
+  }
+
+  /**
+   * Resumes background music after countdown finishes or pause ends.
+   * Restores playback from the paused position rather than restarting from zero.
+   */
+  async resumeBackground(track?: BackgroundTrackName): Promise<void> {
+    const targetTrack = track ?? this.pausedBgTrack ?? "launch";
+    this.pausedBgTrack = null;
+
+    if (!this.unlocked) {
+      this.currentBgTrack = targetTrack;
+      return;
+    }
+
+    if (this.currentBgTrack === targetTrack) {
+      return;
+    }
+
+    this.currentBgTrack = targetTrack;
+
+    const newSrc = CEREMONY_AUDIO_CONFIG.tracks[targetTrack];
+    const newClip = this.getOrCreateClip(newSrc, true);
+    if (!newClip) {
+      this.markUnavailable();
+      return;
+    }
+
+    const targetVolume =
+      targetTrack === "welcome"
+        ? CEREMONY_AUDIO_CONFIG.volumes.welcomeAmbience
+        : targetTrack === "waiting"
+          ? CEREMONY_AUDIO_CONFIG.volumes.guestWaitingMusic
+          : CEREMONY_AUDIO_CONFIG.volumes.finalLaunchMusic;
+
+    const fadeInDuration =
+      targetTrack === "launch"
+        ? CEREMONY_AUDIO_CONFIG.fades.launchFadeInMs
+        : CEREMONY_AUDIO_CONFIG.fades.standardMs;
+
+    this.clearFadeForClip(newClip);
+    newClip.loop = true;
+    newClip.volume = 0;
+    // Note: Do not reset currentTime = 0, resume from current position
+
+    try {
+      await newClip.play();
+      this.fadeVolume(newClip, targetVolume, fadeInDuration);
+    } catch {
+      this.markUnavailable();
+    }
+  }
+
+  /**
+   * Stops background music and resets playback position.
    */
   stopBackground(immediate = false): void {
+    this.pausedBgTrack = null;
     if (!this.currentBgTrack) {
       return;
     }
@@ -183,11 +287,14 @@ export class CeremonyAudio {
     }
 
     if (immediate) {
+      this.clearFadeForClip(clip);
       clip.pause();
       clip.volume = 0;
+      clip.currentTime = 0;
     } else {
       this.fadeVolume(clip, 0, CEREMONY_AUDIO_CONFIG.fades.quickCutMs, () => {
         clip.pause();
+        clip.currentTime = 0;
       });
     }
   }
@@ -242,12 +349,12 @@ export class CeremonyAudio {
 
   /**
    * Schedules countdown audio synchronized with server time.
-   * Background music is immediately cut to guarantee countdown audio priority.
+   * Background music is muted and paused to guarantee countdown audio priority.
    */
   scheduleCountdown(startsAt: number, durationMs: number, now: number): void {
     this.clearTimers();
-    // Countdown audio has absolute priority; cut previous background tracks immediately
-    this.stopBackground(true);
+    // Countdown audio has absolute priority; mute/pause background music during countdown
+    this.pauseBackground(true);
 
     // Schedule 3, 2, 1 countdown audio cues
     for (const delay of countdownCueDelays(startsAt, durationMs, now)) {
@@ -265,13 +372,24 @@ export class CeremonyAudio {
     this.clearTimers();
     this.clearFadeIntervals();
     this.currentBgTrack = null;
+    this.pausedBgTrack = null;
     for (const clip of this.clips.values()) {
       try {
         clip.pause();
         clip.volume = 0;
+        clip.currentTime = 0;
       } catch {
         this.markUnavailable();
       }
+    }
+  }
+
+  private clearFadeForClip(clip: AudioLike): void {
+    const existing = this.clipFadeIntervals.get(clip);
+    if (existing) {
+      clearInterval(existing);
+      this.fadeIntervals.delete(existing);
+      this.clipFadeIntervals.delete(clip);
     }
   }
 
@@ -281,6 +399,8 @@ export class CeremonyAudio {
     durationMs: number,
     onComplete?: () => void,
   ): void {
+    this.clearFadeForClip(clip);
+
     const steps = 16;
     const intervalMs = Math.max(16, Math.floor(durationMs / steps));
     const startVolume = clip.volume;
@@ -293,6 +413,7 @@ export class CeremonyAudio {
         clip.volume = Math.max(0, Math.min(1, targetVolume));
         clearInterval(timer);
         this.fadeIntervals.delete(timer);
+        this.clipFadeIntervals.delete(clip);
         onComplete?.();
       } else {
         clip.volume = Math.max(0, Math.min(1, clip.volume + delta));
@@ -300,6 +421,7 @@ export class CeremonyAudio {
     }, intervalMs);
 
     this.fadeIntervals.add(timer);
+    this.clipFadeIntervals.set(clip, timer);
   }
 
   private initAudioContext(): AudioContext | null {
@@ -410,6 +532,7 @@ export class CeremonyAudio {
       clearInterval(interval);
     }
     this.fadeIntervals.clear();
+    this.clipFadeIntervals.clear();
   }
 }
 

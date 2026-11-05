@@ -81,7 +81,7 @@ export function CeremonyDisplay() {
         ? "waiting"
         : channel.ceremony?.status === "OPENED"
           ? "launch"
-          : "welcome";
+          : undefined;
     await channel.audioRef.current?.unlock(initialTrack);
   }
 

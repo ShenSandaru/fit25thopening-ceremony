@@ -101,14 +101,16 @@ export function useCeremonyChannel(
         currentStatus.current = incoming.status;
 
         if (incoming.status === "WAITING" || incoming.status === "READY") {
-          void audioRef.current?.playBackground("welcome");
+          // Keep welcome / standby silent; music starts after clicking begin activations
+          audioRef.current?.stopBackground(true);
         } else if (incoming.status === "COLLECTING_ACTIVATIONS") {
           void audioRef.current?.playBackground("waiting");
         } else if (incoming.status === "COUNTDOWN") {
-          // Immediately cut waiting music when countdown commences
-          audioRef.current?.stopBackground(true);
+          // Immediately mute / pause background music when countdown commences
+          audioRef.current?.pauseBackground(true);
         } else if (incoming.status === "OPENED") {
-          void audioRef.current?.playBackground("launch");
+          // Resume background music after countdown is over
+          void audioRef.current?.resumeBackground("launch");
         } else if (incoming.status === "ABORTED") {
           audioRef.current?.stop();
         }
@@ -170,7 +172,7 @@ export function useCeremonyChannel(
       if (current && (payload.runId !== current.runId || payload.version < current.version)) {
         return;
       }
-      void audioRef.current?.playBackground("launch");
+      void audioRef.current?.resumeBackground("launch");
     });
 
     next.on(SERVER_EVENTS.EVENT_ABORTED, () => {

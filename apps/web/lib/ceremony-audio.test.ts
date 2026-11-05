@@ -43,7 +43,7 @@ describe("CeremonyAudio", () => {
     const { factory, played } = fakeFactory(false);
     const audio = new CeremonyAudio(factory);
     audio.preload();
-    await audio.unlock();
+    await audio.unlock("waiting");
     expect(audio.unavailable).toBe(true);
     vi.useFakeTimers();
     audio.scheduleCountdown(1_000, 3_000, 1_000);
@@ -53,6 +53,57 @@ describe("CeremonyAudio", () => {
     vi.useRealTimers();
   });
 
+  it("does not start background music on generic unlock until activation begins", async () => {
+    const { factory, played } = fakeFactory(true);
+    const audio = new CeremonyAudio(factory);
+    audio.preload();
+
+    // Standby / presentation unlock without initial track: does not play music
+    await audio.unlock();
+    expect(played).toHaveLength(0);
+
+    // Operator clicks begin activations: music starts
+    await audio.playBackground("waiting");
+    expect(played).toContain("/audio/bg_music.mp3");
+
+    audio.stop();
+  });
+
+  it("mutes and pauses during countdown, then resumes after countdown finishes", async () => {
+    const { factory, played, paused, instances } = fakeFactory(true);
+    const audio = new CeremonyAudio(factory);
+    audio.preload();
+
+    // Start music upon activation
+    await audio.unlock("waiting");
+    expect(played).toContain("/audio/bg_music.mp3");
+    const clip = instances.get("/audio/bg_music.mp3")!;
+    clip.currentTime = 12.5;
+
+    // Countdown starts: music is muted and paused
+    vi.useFakeTimers();
+    audio.scheduleCountdown(10_000, 3_000, 10_000);
+    expect(paused).toContain("/audio/bg_music.mp3");
+    expect(clip.volume).toBe(0);
+
+    // Countdown completes: music is resumed from previous position (currentTime not reset to 0)
+    await audio.resumeBackground("launch");
+    expect(clip.currentTime).toBe(12.5);
+
+    audio.stop();
+    vi.useRealTimers();
+  });
+
+  it("configures the new background music asset while preserving cues", () => {
+    expect(CEREMONY_AUDIO_CONFIG.tracks.welcome).toBe("/audio/bg_music.mp3");
+    expect(CEREMONY_AUDIO_CONFIG.tracks.waiting).toBe("/audio/bg_music.mp3");
+    expect(CEREMONY_AUDIO_CONFIG.tracks.launch).toBe("/audio/bg_music.mp3");
+    expect(CEREMONY_AUDIO_CONFIG.cues.activation).toBe("/audio/placeholders/activation.wav");
+    expect(CEREMONY_AUDIO_CONFIG.cues.countdown).toBe("/audio/placeholders/countdown.wav");
+    expect(CEREMONY_AUDIO_CONFIG.cues.sync).toBe("/audio/placeholders/voiceover.wav");
+    expect(CEREMONY_AUDIO_CONFIG.cues.impact).toBe("/audio/placeholders/opening.wav");
+  });
+
   it("transitions background music tracks according to ceremony state", async () => {
     const { factory, played, instances } = fakeFactory(true);
     const audio = new CeremonyAudio(factory);
@@ -60,13 +111,13 @@ describe("CeremonyAudio", () => {
 
     // 1. Unlock with welcome ambience
     await audio.unlock("welcome");
-    expect(played).toContain(CEREMONY_AUDIO_CONFIG.tracks.welcome);
+    expect(played).toContain("/audio/bg_music.mp3");
     const welcomeClip = instances.get(CEREMONY_AUDIO_CONFIG.tracks.welcome);
     expect(welcomeClip?.loop).toBe(true);
 
-    // 2. Transition to guest waiting track
+    // 2. Transition to guest waiting track (adjusts volume without restarting)
     await audio.playBackground("waiting");
-    expect(played).toContain(CEREMONY_AUDIO_CONFIG.tracks.waiting);
+    expect(played).toContain("/audio/bg_music.mp3");
     const waitingClip = instances.get(CEREMONY_AUDIO_CONFIG.tracks.waiting);
     expect(waitingClip?.loop).toBe(true);
 
