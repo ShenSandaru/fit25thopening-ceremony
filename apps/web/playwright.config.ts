@@ -35,7 +35,7 @@ export default defineConfig({
         SESSION_SECRET: "e2e-session-secret-at-least-32-characters",
         COOKIE_SECURE: "false",
         LOG_LEVEL: "error",
-        COUNTDOWN_DURATION_MS: "8000",
+        COUNTDOWN_DURATION_MS: "3000",
       },
     },
     {

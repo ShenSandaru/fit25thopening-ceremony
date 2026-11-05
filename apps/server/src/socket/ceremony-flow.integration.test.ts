@@ -164,13 +164,13 @@ describe("ceremony display flow", () => {
     expect(runtime.ceremony.getState().status).toBe("COLLECTING_ACTIVATIONS");
     expect(await activate(clients[2]!)).toMatchObject({ ok: true });
     const countdownState = await countdown;
-    expect(countdownState.countdown).toMatchObject({ trigger: "ALL_ACTIVATED", durationMs: 5000 });
+    expect(countdownState.countdown).toMatchObject({ trigger: "ALL_ACTIVATED", durationMs: 3000 });
     expect(await activate(clients[0]!)).toMatchObject({
       ok: false,
       error: { code: "INVALID_TRANSITION" },
     });
 
-    time.advance(4999);
+    time.advance(2999);
     expect(runtime.ceremony.getState().status).toBe("COUNTDOWN");
     time.advance(1);
     await expect(opened).resolves.toMatchObject({ status: "OPENED" });

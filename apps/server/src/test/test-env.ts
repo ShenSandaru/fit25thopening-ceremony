@@ -8,7 +8,7 @@ export function createTestEnv(overrides: Record<string, string> = {}): ServerEnv
     PORT: "4010",
     CORS_ORIGINS: "http://localhost:3000",
     SESSION_SECRET: "test-session-secret-at-least-32-chars",
-    COUNTDOWN_DURATION_MS: "5000",
+    COUNTDOWN_DURATION_MS: "3000",
     PREPARATION_DELAY_MS: "0",
     LOG_LEVEL: "error",
     ...overrides,

@@ -14,7 +14,7 @@ describe("parseServerEnv", () => {
       PORT: 4000,
       CORS_ORIGINS: ["http://localhost:3000"],
       SESSION_SECRET: "a".repeat(32),
-      COUNTDOWN_DURATION_MS: 5000,
+      COUNTDOWN_DURATION_MS: 3000,
       PREPARATION_DELAY_MS: 0,
       LOG_LEVEL: "info",
       SESSION_RECONNECT_GRACE_MS: 60_000,

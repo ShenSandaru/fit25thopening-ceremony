@@ -57,7 +57,7 @@ function collectingService(options?: {
   let index = 0;
   const service = new CeremonyService({
     clock,
-    countdownDurationMs: options?.durationMs ?? 5000,
+    countdownDurationMs: options?.durationMs ?? 3000,
     preparationDelayMs: options?.delayMs ?? 0,
     createRunId: () => runIds[index++] ?? `run-${index}`,
   });
@@ -121,14 +121,14 @@ describe("CeremonyService", () => {
     expect(state.status).toBe("COUNTDOWN");
     expect(state.countdown).toMatchObject({
       trigger: "ALL_ACTIVATED",
-      durationMs: 5000,
+      durationMs: 3000,
     });
-    expect(state.countdown?.opensAt).toBe((state.countdown?.acceptedAt ?? 0) + 5000);
+    expect(state.countdown?.opensAt).toBe((state.countdown?.acceptedAt ?? 0) + 3000);
     expect(changes.filter((name) => name === SERVER_EVENTS.EVENT_COUNTDOWN_STARTED)).toHaveLength(
       1,
     );
 
-    advance(4999);
+    advance(2999);
     expect(service.getState().status).toBe("COUNTDOWN");
     advance(1);
     expect(service.getState().status).toBe("OPENED");
@@ -216,7 +216,7 @@ describe("CeremonyService", () => {
     service.activate("vice-chancellor");
     service.activate("dean");
     expect(() => service.reset()).toThrow(/COUNTDOWN/);
-    advance(5000);
+    advance(3000);
     expect(service.reset().status).toBe("WAITING");
   });
 
@@ -255,11 +255,11 @@ describe("CeremonyService", () => {
   });
 
   it("applies preparation delay to startsAt", () => {
-    const { service } = collectingService({ delayMs: 1000, durationMs: 5000 });
+    const { service } = collectingService({ delayMs: 1000, durationMs: 3000 });
     service.activate("chief");
     service.activate("vice-chancellor");
     const state = service.activate("dean");
     expect(state.countdown?.startsAt).toBe((state.countdown?.acceptedAt ?? 0) + 1000);
-    expect(state.countdown?.opensAt).toBe((state.countdown?.acceptedAt ?? 0) + 6000);
+    expect(state.countdown?.opensAt).toBe((state.countdown?.acceptedAt ?? 0) + 4000);
   });
 });

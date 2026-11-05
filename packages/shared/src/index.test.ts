@@ -18,7 +18,7 @@ describe("@fit-expo/shared public API", () => {
   it("exports project constants", () => {
     expect(PROJECT_NAME).toBe("FIT Expo Opening Ceremony");
     expect(DEFAULT_SERVER_PORT).toBe(4000);
-    expect(DEFAULT_COUNTDOWN_DURATION_MS).toBe(5000);
+    expect(DEFAULT_COUNTDOWN_DURATION_MS).toBe(3000);
   });
 
   it("defines all ceremony statuses and guest roles", () => {

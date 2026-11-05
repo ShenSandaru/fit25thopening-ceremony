@@ -4,7 +4,12 @@ import { PROJECT_NAME } from "@fit-expo/shared";
 import { useEffect, useState } from "react";
 import { useCeremonyChannel } from "@/hooks/use-ceremony-channel";
 import { countdownSecondsRemaining, displayView } from "@/lib/ceremony-sync";
-import { GuestIndicators } from "./GuestIndicators";
+import { FuturisticHudOverlay } from "./FuturisticHudOverlay";
+import { RoboticEnergyCore } from "./RoboticEnergyCore";
+import { HolographicHandprints } from "./HolographicHandprints";
+import { SystemInitialization } from "./SystemInitialization";
+import { FuturisticCountdown } from "./FuturisticCountdown";
+import { LaunchReveal } from "./LaunchReveal";
 
 type Claim = "pending" | "ready" | "taken" | "guest-browser";
 
@@ -21,6 +26,10 @@ export function CeremonyDisplay() {
     channel.ceremony?.countdown && view === "countdown"
       ? countdownSecondsRemaining(channel.ceremony.countdown.opensAt, channel.now)
       : null;
+
+  const activatedCount = channel.ceremony?.activations
+    ? Object.values(channel.ceremony.activations).filter((a) => a !== null).length
+    : 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -54,8 +63,6 @@ export function CeremonyDisplay() {
   }
 
   async function present() {
-    // Fullscreen applies to this browser window only. The operator places that
-    // window on the mirrored or extended projector screen first.
     const root = document.documentElement;
     try {
       if (!document.fullscreenElement && document.fullscreenEnabled) {
@@ -65,123 +72,150 @@ export function CeremonyDisplay() {
         ]);
       }
     } catch {
-      // Fullscreen can be denied. The ceremony still runs in the window.
+      // Fullscreen can be denied; ceremony continues.
     }
     await channel.audioRef.current?.unlock();
   }
 
-  const showGuests =
-    view === "waiting-for-activations" || view === "all-activated" || view === "countdown";
-
   return (
     <main
       data-display-view={view}
-      className="display-stage relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-black text-white"
+      className="display-stage relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-slate-950 text-white font-sans selection:bg-gold selection:text-navy-blue"
     >
-      <section className="display-frame relative flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-center gap-10 overflow-hidden bg-navy-blue px-16 py-12 text-center">
-        <p className="text-3xl tracking-[0.28em] text-white/80 uppercase">
-          Faculty of Information Technology
-        </p>
-        <Frame view={view} seconds={seconds} audioUnavailable={channel.audioUnavailable} />
-        {showGuests ? <GuestIndicators state={channel.ceremony} devices={channel.devices} /> : null}
-        <p className="absolute bottom-6 left-8 text-sm text-white/70" role="status">
-          {channel.connected ? "Display connected" : "Reconnecting"}
-          {channel.audioUnavailable ? " · Audio unavailable" : ""}
-        </p>
-        {view === "welcome" ? (
-          <div className="absolute right-8 bottom-6 flex gap-3">
-            <button type="button" className="display-control" onClick={() => void present()}>
+      {/* Sci-Fi HUD Ambient Canvas & Grid Overlay */}
+      <FuturisticHudOverlay
+        connected={channel.connected}
+        audioUnavailable={channel.audioUnavailable}
+      />
+
+      {/* Main Display Stage Container */}
+      <section className="relative z-10 flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-center gap-6 overflow-hidden px-8 py-10 text-center">
+        {/* View-Specific Content Frame */}
+        <div className="flex w-full flex-1 flex-col items-center justify-center">
+          {view === "reconnecting" ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="size-16 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+              <h1 className="font-heading text-5xl font-bold tracking-wide">
+                Connecting to Launch Subsystem…
+              </h1>
+              <p className="font-mono text-cyan-300/80 text-sm">INITIALIZING SECURE SOCKET LINK</p>
+            </div>
+          ) : view === "taken" ? (
+            <div className="flex flex-col items-center gap-4">
+              <h1 className="font-heading text-5xl font-bold text-red-400">
+                Display Terminal Active Elsewhere
+              </h1>
+              <p className="font-mono text-white/70">
+                Only one authoritative display session is permitted.
+              </p>
+            </div>
+          ) : view === "guest-browser" ? (
+            <div className="flex flex-col items-center gap-4">
+              <h1 className="font-heading text-5xl font-bold text-amber-300">
+                Tablet Assigned to Guest
+              </h1>
+              <p className="font-mono text-white/70">
+                This browser instance is currently linked to an active guest tablet session.
+              </p>
+            </div>
+          ) : view === "welcome" ? (
+            <div className="display-enter flex flex-col items-center gap-6">
+              <div className="relative my-2">
+                <RoboticEnergyCore activatedCount={0} />
+              </div>
+              <h1 className="font-heading text-7xl font-black tracking-tight text-white md:text-8xl">
+                {PROJECT_NAME}
+              </h1>
+              <div
+                aria-hidden="true"
+                className="h-1 w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
+              />
+              <p className="font-heading text-3xl font-semibold tracking-wider text-cyan-300 md:text-4xl">
+                University of Moratuwa
+              </p>
+              <p className="max-w-3xl font-mono text-lg text-white/80 leading-relaxed">
+                Ceremony display screen ready. Project this window onto the auditorium display and
+                enable presentation mode.
+              </p>
+            </div>
+          ) : view === "waiting-for-activations" ? (
+            <div className="display-enter flex w-full flex-col items-center gap-8">
+              {/* Dynamic Robotic Core reacting to guest activations */}
+              <div className="relative">
+                <RoboticEnergyCore activatedCount={activatedCount} />
+              </div>
+
+              {/* Status Header */}
+              <div className="flex flex-col items-center gap-2">
+                <h1 className="font-heading text-5xl font-extrabold tracking-wide text-white md:text-6xl drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">
+                  WAITING FOR GUEST AUTHORIZATION
+                </h1>
+                <p className="font-mono text-xl tracking-[0.2em] text-cyan-300 md:text-2xl">
+                  {activatedCount} OF 3 BIOMETRIC SIGNALS CONNECTED
+                </p>
+              </div>
+
+              {/* Holographic Handprint Stations for Chief, VC, Dean */}
+              <HolographicHandprints state={channel.ceremony} devices={channel.devices} />
+            </div>
+          ) : view === "all-activated" ? (
+            <SystemInitialization />
+          ) : view === "countdown" ? (
+            <FuturisticCountdown seconds={seconds} />
+          ) : view === "opened" ? (
+            <LaunchReveal audioUnavailable={channel.audioUnavailable} />
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <h1 className="font-heading text-5xl font-bold text-amber-400">
+                Ceremony Sequence Aborted
+              </h1>
+              <p className="font-mono text-white/80 text-xl">
+                System standing by. Please contact event organizers.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Telemetry & Actions */}
+        <div className="flex w-full items-center justify-between border-t border-white/10 pt-4 text-xs font-mono">
+          <p className="text-white/70" role="status">
+            <span
+              className={`inline-block size-2 rounded-full mr-2 ${
+                channel.connected ? "bg-cyan-400 animate-pulse" : "bg-red-400"
+              }`}
+            />
+            {channel.connected ? "TERMINAL LINKED" : "RECONNECTING"}
+            {channel.audioUnavailable ? " · AUDIO OFFLINE" : " · AUDIO SYNTH ONLINE"}
+          </p>
+
+          {view === "welcome" ? (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="display-control hover:bg-white/10 transition-colors"
+                onClick={() => void present()}
+              >
+                Enable presentation
+              </button>
+              <button
+                type="button"
+                className="display-control bg-gold/20 border-gold hover:bg-gold/30 text-gold font-bold transition-all shadow-[0_0_15px_rgba(201,162,39,0.3)]"
+                onClick={() => void begin()}
+              >
+                Begin activations
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="text-white/60 hover:text-white underline underline-offset-4 transition-colors"
+              onClick={() => void present()}
+            >
               Enable presentation
             </button>
-            <button type="button" className="display-control" onClick={() => void begin()}>
-              Begin activations
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="absolute right-8 bottom-6 text-sm text-white/70 underline"
-            onClick={() => void present()}
-          >
-            Enable presentation
-          </button>
-        )}
+          )}
+        </div>
       </section>
     </main>
-  );
-}
-
-function Frame({
-  view,
-  seconds,
-  audioUnavailable,
-}: {
-  view: string;
-  seconds: number | null;
-  audioUnavailable: boolean;
-}) {
-  if (view === "reconnecting" || view === "pending") {
-    return <h1 className="font-heading text-6xl font-bold">Connecting the display…</h1>;
-  }
-  if (view === "taken") {
-    return (
-      <h1 className="font-heading text-5xl font-bold">The display is already open elsewhere.</h1>
-    );
-  }
-  if (view === "guest-browser") {
-    return (
-      <h1 className="font-heading text-5xl font-bold">This browser is assigned to a guest.</h1>
-    );
-  }
-  if (view === "welcome") {
-    return (
-      <>
-        <h1 className="font-heading text-7xl font-bold xl:text-8xl">{PROJECT_NAME}</h1>
-        <div aria-hidden="true" className="h-1 w-40 rounded-full bg-gold" />
-        <p className="max-w-4xl text-5xl leading-tight">University of Moratuwa</p>
-        <p className="max-w-5xl text-3xl leading-snug text-white/85">
-          This browser is the ceremony screen. Show this window on the projector, then enable
-          presentation. Sound plays from this laptop.
-        </p>
-      </>
-    );
-  }
-  if (view === "waiting-for-activations") {
-    return (
-      <>
-        <h1 className="font-heading text-6xl font-bold">Waiting for the guests</h1>
-        <p className="text-5xl text-white/85">Each guest activates from their tablet.</p>
-      </>
-    );
-  }
-  if (view === "all-activated") {
-    return <h1 className="display-enter font-heading text-7xl font-bold">All guests are ready</h1>;
-  }
-  if (view === "countdown") {
-    return (
-      <p
-        key={seconds ?? 0}
-        aria-live="assertive"
-        className="display-digit font-heading text-[40vh] leading-none font-bold tabular-nums"
-      >
-        {seconds ?? 0}
-      </p>
-    );
-  }
-  if (view === "opened") {
-    return (
-      <div className="display-enter flex flex-col items-center gap-8">
-        <p className="text-5xl tracking-[0.2em] text-gold uppercase">Officially open</p>
-        <h1 className="font-heading text-8xl font-bold">{PROJECT_NAME}</h1>
-        <p className="text-5xl">Faculty of Information Technology</p>
-        {audioUnavailable ? <span className="sr-only">Audio unavailable</span> : null}
-      </div>
-    );
-  }
-  return (
-    <>
-      <h1 className="font-heading text-6xl font-bold">The ceremony has been stopped</h1>
-      <p className="text-5xl text-white/85">Please wait for the organizers.</p>
-    </>
   );
 }
