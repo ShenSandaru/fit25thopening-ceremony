@@ -9,6 +9,7 @@ export const PLACEHOLDER_AUDIO = {
   activation: "/audio/placeholders/activation.wav",
   countdown: "/audio/placeholders/countdown.wav",
   opening: "/audio/placeholders/opening.wav",
+  voiceover: "/audio/placeholders/voiceover.wav",
 } as const;
 
 export type CueName = keyof typeof PLACEHOLDER_AUDIO;
@@ -166,6 +167,21 @@ export class CeremonyAudio {
         gain.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + 0.5);
+      } else if (cue === "voiceover") {
+        // Robotic harmonic chime for voiceover sequence
+        const freqs = [330, 440, 660];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + 1.3);
+        });
       } else if (cue === "opening") {
         // Futuristic chord sweep in gold harmony
         const freqs = [220, 277.18, 329.63, 440, 554.37, 659.25];

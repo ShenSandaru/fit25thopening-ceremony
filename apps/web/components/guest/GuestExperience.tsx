@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCeremonyChannel } from "@/hooks/use-ceremony-channel";
 import { countdownSecondsRemaining } from "@/lib/ceremony-sync";
-import { GUEST_LABELS, viewFromCeremony } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS, GUEST_LABELS, viewFromCeremony } from "@/lib/guest-config";
 import { ConnectionIndicator } from "./ConnectionIndicator";
 import { SlideToActivate } from "./SlideToActivate";
 
@@ -17,6 +17,8 @@ type GuestExperienceProps = {
 export function GuestExperience({ expectedRole }: GuestExperienceProps) {
   const router = useRouter();
   const label = GUEST_LABELS[expectedRole];
+  const generic = GENERIC_GUEST_LABELS[expectedRole];
+
   const [assignedRole, setAssignedRole] = useState<GuestRole | "display" | null | undefined>(
     undefined,
   );
@@ -90,47 +92,107 @@ export function GuestExperience({ expectedRole }: GuestExperienceProps) {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white px-6 py-10 text-center">
-      <p className="text-sm tracking-wide text-navy-blue uppercase">
-        Faculty of Information Technology
-      </p>
-      <h1 className="text-4xl font-bold text-navy-blue">{label.title}</h1>
-      <div aria-hidden="true" className="h-1 w-24 rounded-full bg-gold" />
-      {assignedRole === undefined ? <p>Checking this tablet…</p> : null}
+    <main className="relative flex min-h-screen flex-col items-center justify-center gap-6 bg-slate-950 px-6 py-10 text-center text-white selection:bg-gold selection:text-navy-blue">
+      {/* Background cybernetic grid lines */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1b3a6b_1px,transparent_1px)] [background-size:24px_24px] opacity-30"
+      />
+
+      {/* Header Tag */}
+      <div className="relative z-10 flex items-center gap-2">
+        <span className="size-2 rounded-full bg-cyan-400" />
+        <p className="font-mono text-xs font-semibold tracking-[0.25em] text-cyan-300 uppercase">
+          Faculty of Information Technology · University of Moratuwa
+        </p>
+        <span className="size-2 rounded-full bg-gold" />
+      </div>
+
+      {/* Generic Station & Designation Heading */}
+      <div className="relative z-10 flex flex-col items-center gap-1">
+        <span className="font-mono text-xs font-bold tracking-[0.3em] text-gold uppercase">
+          {generic.station} · {generic.position} POSITION
+        </span>
+        <h1
+          aria-label={label.title}
+          className="font-heading text-5xl sm:text-6xl font-black text-white tracking-wide drop-shadow-[0_0_20px_rgba(201,162,39,0.4)]"
+        >
+          {generic.label}
+        </h1>
+        <div
+          aria-hidden="true"
+          className="mt-2 h-1 w-28 rounded-full bg-gold shadow-[0_0_12px_#c9a227]"
+        />
+      </div>
+
+      {assignedRole === undefined ? (
+        <p className="font-mono text-cyan-300/80 animate-pulse">Checking tablet link…</p>
+      ) : null}
+
       {assignedRole === null ? (
-        <a className="text-navy-blue underline" href="/guest">
-          Choose a guest
+        <a className="font-mono text-sm text-gold underline underline-offset-4" href="/guest">
+          Choose a guest station
         </a>
       ) : null}
+
       {assignedRole && assignedRole !== expectedRole && assignedRole !== "display" ? (
-        <a className="text-navy-blue underline" href={`/guest/${assignedRole}`}>
-          This tablet is assigned to {GUEST_LABELS[assignedRole].title}
+        <a
+          className="font-mono text-sm text-gold underline underline-offset-4"
+          href={`/guest/${assignedRole}`}
+        >
+          This tablet is assigned to {GENERIC_GUEST_LABELS[assignedRole].label}
         </a>
       ) : null}
+
       {assignedRole === "display" ? (
-        <Link className="text-navy-blue underline" href="/">
+        <Link className="font-mono text-sm text-gold underline underline-offset-4" href="/">
           This browser is the ceremony display
         </Link>
       ) : null}
+
       {assignedRole === expectedRole ? (
-        <>
+        <div className="relative z-10 flex w-full max-w-xl flex-col items-center gap-6">
           <ConnectionIndicator connected={channel.connected} />
-          <p className="max-w-lg text-lg">
-            Welcome. When the ceremony is ready, slide to open the FIT Expo with the other guests.
+
+          <p className="max-w-lg font-mono text-sm sm:text-base text-white/80 leading-relaxed">
+            Welcome. When the ceremony is ready, slide across to release your biometric lock with
+            the other guests.
           </p>
-          {error ? <p role="alert">{error}</p> : <p>{messageFor(view, seconds)}</p>}
+
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-xl border border-red-500/40 bg-red-950/60 px-4 py-2 font-mono text-xs text-red-300 shadow"
+            >
+              {error}
+            </p>
+          ) : (
+            <p className="font-mono text-sm tracking-wider text-cyan-300 font-semibold drop-shadow">
+              {messageFor(view, seconds)}
+            </p>
+          )}
+
           {!channel.connected && channel.ceremony ? (
-            <p role="status">Reconnecting. Your activation is kept on the server.</p>
+            <p role="status" className="font-mono text-xs text-amber-300">
+              Reconnecting. Your activation is kept on the server.
+            </p>
           ) : null}
+
+          {/* Interactive Slide Control */}
           <SlideToActivate
             disabled={view !== "ready" || !channel.connected}
             busy={submitting && !serverActivated}
             onActivate={activate}
           />
-          <button type="button" className="text-sm underline" onClick={() => void release()}>
+
+          <button
+            type="button"
+            className="font-mono text-xs text-white/50 hover:text-white underline underline-offset-4 transition-colors"
+            onClick={() => void release()}
+          >
             Release this tablet
           </button>
-        </>
+        </div>
       ) : null}
     </main>
   );

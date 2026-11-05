@@ -95,7 +95,10 @@ export function CeremonyDisplay() {
           {view === "reconnecting" ? (
             <div className="flex flex-col items-center gap-4">
               <div className="size-16 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-              <h1 className="font-heading text-5xl font-bold tracking-wide">
+              <h1
+                style={{ fontFamily: "var(--font-outfit), Outfit, sans-serif" }}
+                className="font-heading text-5xl font-bold tracking-wide"
+              >
                 Connecting to Launch Subsystem…
               </h1>
               <p className="font-mono text-cyan-300/80 text-sm">INITIALIZING SECURE SOCKET LINK</p>
@@ -120,22 +123,40 @@ export function CeremonyDisplay() {
             </div>
           ) : view === "welcome" ? (
             <div className="display-enter flex flex-col items-center gap-6">
-              <div className="relative my-2">
+              {/* University of Moratuwa Crest / Branding Frame */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="inline-flex items-center gap-3 rounded-full border border-gold/40 bg-navy-blue/80 px-6 py-1.5 shadow-[0_0_20px_rgba(201,162,39,0.25)] backdrop-blur-md">
+                  <span className="size-2 rounded-full bg-gold animate-ping" />
+                  <span className="font-mono text-xs font-bold tracking-[0.3em] text-gold uppercase">
+                    UNIVERSITY OF MORATUWA
+                  </span>
+                  <span className="size-2 rounded-full bg-cyan-400" />
+                </div>
+                <p className="font-mono text-xs tracking-[0.25em] text-cyan-300 uppercase">
+                  FACULTY OF INFORMATION TECHNOLOGY
+                </p>
+              </div>
+
+              <div className="relative my-1">
                 <RoboticEnergyCore activatedCount={0} />
               </div>
-              <h1 className="font-heading text-7xl font-black tracking-tight text-white md:text-8xl">
+
+              <h1
+                style={{ fontFamily: "var(--font-outfit), Outfit, sans-serif" }}
+                className="font-heading text-6xl font-black tracking-tight text-white md:text-8xl drop-shadow-[0_0_40px_rgba(201,162,39,0.7)]"
+              >
                 {PROJECT_NAME}
               </h1>
               <div
                 aria-hidden="true"
                 className="h-1 w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
               />
-              <p className="font-heading text-3xl font-semibold tracking-wider text-cyan-300 md:text-4xl">
-                University of Moratuwa
+              <p className="font-heading text-2xl font-bold tracking-widest text-cyan-200 md:text-3xl">
+                FIT EXPO 2026
               </p>
-              <p className="max-w-3xl font-mono text-lg text-white/80 leading-relaxed">
-                Ceremony display screen ready. Project this window onto the auditorium display and
-                enable presentation mode.
+              <p className="max-w-3xl font-mono text-base text-white/80 leading-relaxed">
+                Ceremony display ready. Mirror or extend this window onto the auditorium projector
+                and enable presentation mode. Sound plays from this device.
               </p>
             </div>
           ) : view === "waiting-for-activations" ? (

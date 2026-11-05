@@ -7,7 +7,7 @@ import {
   type RoleAvailability,
 } from "@fit-expo/shared";
 import { useState } from "react";
-import { GUEST_LABELS } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS, GUEST_LABELS } from "@/lib/guest-config";
 import { ConfirmDialog } from "./ConfirmDialog";
 
 type GuestManagementProps = {
@@ -36,6 +36,7 @@ export function GuestManagement({
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {GUEST_ROLES.map((role) => {
+          const generic = GENERIC_GUEST_LABELS[role];
           const config = GUEST_LABELS[role];
           const isActivated = Boolean(state?.activations[role]);
           const info = availability.find((a) => a.role === role);
@@ -51,9 +52,14 @@ export function GuestManagement({
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-heading text-sm font-bold text-navy-blue">
-                    {config.title}
-                  </span>
+                  <div>
+                    <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider block">
+                      {generic.station}
+                    </span>
+                    <span className="font-heading text-sm font-bold text-navy-blue">
+                      {generic.label}
+                    </span>
+                  </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                       isAssigned ? "bg-blue-100 text-navy-blue" : "bg-slate-200 text-slate-600"
@@ -62,6 +68,7 @@ export function GuestManagement({
                     {isAssigned ? "Assigned" : "Available"}
                   </span>
                 </div>
+                <p className="mt-1 text-xs text-slate-500 font-mono">{config.title}</p>
 
                 <div className="mt-2 text-xs text-slate-600">
                   {isActivated ? (

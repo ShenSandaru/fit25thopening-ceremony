@@ -1,23 +1,12 @@
 "use client";
 
-import {
-  GUEST_ROLES,
-  type CeremonyState,
-  type DeviceStatus,
-  type GuestRole,
-} from "@fit-expo/shared";
-import { GUEST_LABELS } from "@/lib/guest-config";
+import { GUEST_ROLES, type CeremonyState, type DeviceStatus } from "@fit-expo/shared";
+import { GENERIC_GUEST_LABELS } from "@/lib/guest-config";
 import { guestIndicatorStatus } from "@/lib/ceremony-sync";
 
 type HolographicHandprintsProps = {
   state: CeremonyState | null;
   devices: readonly DeviceStatus[];
-};
-
-const GUEST_INDEX_MAP: Record<GuestRole, { number: string; index: number }> = {
-  chief: { number: "GUEST 01", index: 1 },
-  "vice-chancellor": { number: "GUEST 02", index: 2 },
-  dean: { number: "GUEST 03", index: 3 },
 };
 
 export function HolographicHandprints({ state, devices }: HolographicHandprintsProps) {
@@ -28,8 +17,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
           const status = guestIndicatorStatus(role, state, devices);
           const isActivated = status === "activated";
           const isConnected = status === "connected";
-          const meta = GUEST_INDEX_MAP[role];
-          const designation = GUEST_LABELS[role].title;
+          const generic = GENERIC_GUEST_LABELS[role];
 
           return (
             <div
@@ -73,7 +61,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
               {/* Station Header */}
               <div className="flex w-full items-center justify-between border-b border-white/10 pb-3">
                 <span className="font-mono text-xs font-bold tracking-widest text-gold uppercase">
-                  {meta.number}
+                  {generic.station} · {generic.position}
                 </span>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider uppercase ${
@@ -189,8 +177,8 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
 
               {/* Designation & Status Readout */}
               <div className="w-full text-center">
-                <h3 className="font-heading text-lg font-bold text-white tracking-wide">
-                  {designation}
+                <h3 className="font-heading text-xl font-extrabold text-white tracking-wide">
+                  {generic.label}
                 </h3>
                 <p
                   className={`mt-1 font-mono text-xs font-semibold tracking-widest uppercase ${

@@ -6,7 +6,7 @@ import {
   type DeviceStatus,
   type RoleAvailability,
 } from "@fit-expo/shared";
-import { GUEST_LABELS } from "@/lib/guest-config";
+import { GENERIC_GUEST_LABELS } from "@/lib/guest-config";
 
 type GuestMonitoringProps = {
   state: CeremonyState | null;
@@ -19,12 +19,12 @@ export function GuestMonitoring({ state, devices, availability }: GuestMonitorin
     <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
       <h2 className="font-heading text-lg font-bold text-navy-blue">Guest Activation Status</h2>
       <p className="mt-1 text-xs text-slate-500">
-        Live activation and tablet assignment states for the three dignitary roles.
+        Live activation and tablet assignment states for the three dignitary stations.
       </p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
         {GUEST_ROLES.map((role) => {
-          const config = GUEST_LABELS[role];
+          const generic = GENERIC_GUEST_LABELS[role];
           const activation = state?.activations[role];
           const isActivated = Boolean(activation);
           const activationTime = activation
@@ -65,9 +65,14 @@ export function GuestMonitoring({ state, devices, availability }: GuestMonitorin
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-heading text-base font-bold text-navy-blue">
-                    {config.title}
-                  </h3>
+                  <div>
+                    <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider block">
+                      {generic.station} · {generic.position}
+                    </span>
+                    <h3 className="font-heading text-base font-bold text-navy-blue">
+                      {generic.label}
+                    </h3>
+                  </div>
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       isActivated ? "bg-emerald-600 text-white" : "bg-amber-100 text-amber-900"

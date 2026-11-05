@@ -17,6 +17,6 @@
 
 /* Font variables are set by next/font in app/layout.tsx. */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), Outfit, ui-sans-serif, system-ui, sans-serif;
 }

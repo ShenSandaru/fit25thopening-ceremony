@@ -11,12 +11,20 @@ async function releaseSession(page: Page) {
   });
 }
 
+test.afterEach(async ({ page }) => {
+  await releaseSession(page).catch(() => undefined);
+});
+
 test("display route uses faculty colours and heading font", async ({ page }) => {
   await page.goto("/");
   const heading = page.getByRole("heading", { level: 1 });
   await expect(heading).toBeVisible();
   await expect(heading).toHaveCSS("color", "rgb(255, 255, 255)");
-  const fontFamily = await heading.evaluate((element) => getComputedStyle(element).fontFamily);
+  const fontFamily = await heading.evaluate(
+    (element) =>
+      getComputedStyle(element).fontFamily ||
+      getComputedStyle(element).getPropertyValue("font-family"),
+  );
   expect(fontFamily).toContain("Outfit");
   await releaseSession(page);
 });

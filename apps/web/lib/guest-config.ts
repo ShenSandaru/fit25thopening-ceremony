@@ -6,6 +6,15 @@ export const GUEST_LABELS: Record<GuestRole, { title: string; honorific: string 
   dean: { title: "Dean of Information Technology", honorific: "Dean" },
 };
 
+export const GENERIC_GUEST_LABELS: Record<
+  GuestRole,
+  { label: string; position: "Left" | "Center" | "Right"; station: string; index: number }
+> = {
+  chief: { label: "Guest 1", position: "Left", station: "STATION 01", index: 1 },
+  "vice-chancellor": { label: "Guest 2", position: "Center", station: "STATION 02", index: 2 },
+  dean: { label: "Guest 3", position: "Right", station: "STATION 03", index: 3 },
+};
+
 export type GuestView =
   | "loading"
   | "unassigned"
