@@ -1,6 +1,7 @@
 "use client";
 
 import { PROJECT_NAME } from "@fit-expo/shared";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCeremonyChannel } from "@/hooks/use-ceremony-channel";
 import { countdownSecondsRemaining, displayView } from "@/lib/ceremony-sync";
@@ -77,13 +78,15 @@ export function CeremonyDisplay() {
     await channel.audioRef.current?.unlock();
   }
 
+  const isWelcomeOrOpened = view === "welcome" || view === "opened";
+
   return (
     <main
       data-display-view={view}
       className="display-stage relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-slate-950 text-white font-sans selection:bg-gold selection:text-navy-blue"
     >
       {/* Sci-Fi HUD Ambient Canvas & Grid Overlay */}
-      <FuturisticHudOverlay />
+      <FuturisticHudOverlay hideTopHeader={isWelcomeOrOpened} />
 
       {/* Main Display Stage Container */}
       <section className="relative z-10 flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-between overflow-hidden px-4 py-4 sm:px-8 sm:py-6 text-center">
@@ -119,34 +122,43 @@ export function CeremonyDisplay() {
               </p>
             </div>
           ) : view === "welcome" ? (
-            <div className="display-enter flex flex-col items-center gap-[clamp(0.4rem,1.8vh,1.25rem)] max-w-4xl px-4">
-              {/* Official Ceremony Pill (Clean, avoids duplicating the top HUD institutional header) */}
+            <div className="display-enter flex flex-col items-center justify-center gap-[clamp(0.5rem,1.8vh,1.5rem)] max-w-4xl px-4 select-none">
+              {/* Official Ceremony Pill */}
               <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-navy-blue/80 px-4 py-1 text-gold font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase shadow-[0_0_15px_rgba(201,162,39,0.2)]">
                 <span className="size-1.5 rounded-full bg-gold animate-pulse" />
                 OFFICIAL OPENING CEREMONY
                 <span className="size-1.5 rounded-full bg-cyan-400" />
               </div>
 
-              <div className="relative my-0.5">
-                <RoboticEnergyCore activatedCount={0} compact />
+              {/* Prominent Official FIT 25th Anniversary Logo */}
+              <div className="relative my-1 sm:my-3 flex items-center justify-center">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute size-[clamp(160px,26vh,280px)] rounded-full bg-radial from-gold/25 via-gold/10 to-transparent blur-2xl"
+                />
+                <Image
+                  src="/images/FIT-25th-Anniversary-White.png"
+                  alt="FIT 25th Anniversary"
+                  width={1536}
+                  height={1024}
+                  priority
+                  className="relative z-10 h-[clamp(130px,24vh,230px)] w-auto max-w-[min(88vw,460px)] object-contain drop-shadow-[0_0_35px_rgba(201,162,39,0.45)]"
+                />
               </div>
 
+              {/* Ceremony Heading */}
               <h1
                 style={{ fontFamily: "var(--font-outfit), Outfit, sans-serif" }}
-                className="font-heading text-[clamp(2.75rem,7vh,5.5rem)] font-black tracking-tight text-white leading-none drop-shadow-[0_0_40px_rgba(201,162,39,0.7)]"
+                className="font-heading text-[clamp(2.5rem,6vh,5rem)] font-black tracking-tight text-white leading-none drop-shadow-[0_0_35px_rgba(201,162,39,0.7)]"
               >
                 {PROJECT_NAME}
               </h1>
               <div
                 aria-hidden="true"
-                className="h-1 w-40 sm:w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
+                className="h-1 w-36 sm:w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
               />
-              <p className="font-heading text-lg sm:text-2xl font-bold tracking-widest text-cyan-200">
+              <p className="font-heading text-lg sm:text-2xl font-bold tracking-widest text-cyan-200 uppercase">
                 FIT EXPO 2026
-              </p>
-              <p className="max-w-2xl font-mono text-xs sm:text-sm text-white/80 leading-relaxed">
-                Ceremony display ready. Mirror or extend this window onto the auditorium projector
-                and enable presentation mode. Sound plays from this device.
               </p>
             </div>
           ) : view === "waiting-for-activations" ? (
