@@ -1,6 +1,6 @@
 # API Specification
 
-> Status: **PROPOSED contracts.** Nothing here is implemented yet. These contracts are the target for Phases 2 to 7. When implemented, the types and zod schemas in `packages/shared` become the source of truth, and this document must be kept in sync with them.
+> Status: Phases 3–4 use device sessions, not password login. Implemented: guest assign/current/release, `POST /api/display-sessions/claim` (one display), `POST /api/event/begin-activations` (display session only; interim until the admin dashboard), session-gated `GET /api/event/state`, and authenticated `guest:activate`. `device:status` is emitted to the `ceremony` room and `role:admin`. Password-login endpoints below remain the later admin design and are not implemented. The ceremony screen is `/`, not `/display`.
 
 ## 1. Overview
 
@@ -117,8 +117,9 @@ type ActivityEntry = {
 
 Unauthenticated reachability check for operators and devices.
 
-- Response `200`: `{ ok: true, data: { serverTime: number } }`
-- Must not expose state, versions, configuration or secrets.
+- Response `200`: `{ ok: true, data: { status: "ok"; environment: "development" \| "test" \| "production"; serverTime: number } }`
+- Must not expose ceremony state, versions, configuration secrets, or credentials.
+- `environment` is the validated `NODE_ENV` only (not a secret).
 
 ### `POST /api/auth/guest`
 
@@ -154,6 +155,7 @@ A client page MUST verify that the session role matches the route (for example, 
 
 - `200`: `{ ok: true, data: CeremonyState }`
 - Errors: `UNAUTHORIZED`.
+- **Phase 2 interim:** while session authentication is not implemented, this endpoint returns `200` in `development` and `test`, and `401 UNAUTHORIZED` in `production`. Phase 3 replaces the interim gate with real session checks for all environments.
 
 ### `GET /api/event/activity`
 
@@ -234,17 +236,17 @@ Admin commands are REST only (section 4), not socket events, so that each has a 
 
 ### Server to client events
 
-| Event                      | Recipients                                           | Payload                                                                            | When                                        |
-| -------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------- |
-| `event:state`              | Connecting socket; `ceremony` room after each change | `CeremonyState`                                                                    | On connect and after every state change     |
-| `event:activation-started` | `ceremony`                                           | `{ runId; version; startedAt: number }`                                            | `READY` to `COLLECTING_ACTIVATIONS`         |
-| `guest:activated`          | `ceremony`                                           | `{ runId; version; role: GuestRole; activatedAt: number; activatedCount: number }` | Each accepted activation                    |
-| `event:countdown-started`  | `ceremony`                                           | `{ runId; version; serverTime: number } & CountdownInfo`                           | Entering `COUNTDOWN`                        |
-| `event:opened`             | `ceremony`                                           | `{ runId; version; openedAt: number }`                                             | Server timer reaches `opensAt`              |
-| `event:aborted`            | `ceremony`                                           | `{ runId; version; abortedAt: number; reason: string \| null }`                    | Entering `ABORTED`                          |
-| `event:reset`              | `ceremony`                                           | `{ runId; version; resetAt: number }` (new `runId`)                                | Entering `WAITING` by reset                 |
-| `device:status`            | `role:admin`                                         | `{ devices: DeviceStatus[] }` (all five roles)                                     | On admin connect and on any presence change |
-| `activity:logged`          | `role:admin`                                         | `ActivityEntry`                                                                    | Each new activity entry                     |
+| Event                      | Recipients                                           | Payload                                                                                             | When                                    |
+| -------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `event:state`              | Connecting socket; `ceremony` room after each change | `CeremonyState`                                                                                     | On connect and after every state change |
+| `event:activation-started` | `ceremony`                                           | `{ runId; version; startedAt: number }`                                                             | `READY` to `COLLECTING_ACTIVATIONS`     |
+| `guest:activated`          | `ceremony`                                           | `{ runId; version; role: GuestRole; activatedAt: number; activatedCount: number }`                  | Each accepted activation                |
+| `event:countdown-started`  | `ceremony`                                           | `{ runId; version; serverTime: number } & CountdownInfo`                                            | Entering `COUNTDOWN`                    |
+| `event:opened`             | `ceremony`                                           | `{ runId; version; openedAt: number }`                                                              | Server timer reaches `opensAt`          |
+| `event:aborted`            | `ceremony`                                           | `{ runId; version; abortedAt: number; reason: string \| null }`                                     | Entering `ABORTED`                      |
+| `event:reset`              | `ceremony`                                           | `{ runId; version; resetAt: number }` (new `runId`)                                                 | Entering `WAITING` by reset             |
+| `device:status`            | `ceremony` and `role:admin`                          | `{ devices: DeviceStatus[] }` (connected guest and display roles; admin is absent until that phase) | On connect and on any presence change   |
+| `activity:logged`          | `role:admin`                                         | `ActivityEntry`                                                                                     | Each new activity entry                 |
 
 `activity:logged` is an addition, used by the admin activity view.
 

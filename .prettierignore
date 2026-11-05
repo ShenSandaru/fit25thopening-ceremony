@@ -2,6 +2,7 @@ node_modules
 pnpm-lock.yaml
 **/dist
 **/.next
+**/.next-e2e
 **/out
 **/coverage
 **/playwright-report

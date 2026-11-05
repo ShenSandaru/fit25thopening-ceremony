@@ -107,20 +107,27 @@ flowchart LR
 
 **Dependencies:** Phase 1.
 
-| ID     | Task                                                                                                                                                                    | Status      |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| P2-T01 | Shared types: `CeremonyStatus`, `Role`, `GuestRole`, `CeremonyState`, `CountdownInfo`, `DeviceStatus`, `ActivityEntry`                                                  | NOT STARTED |
-| P2-T02 | Shared event name constants and typed event maps                                                                                                                        | NOT STARTED |
-| P2-T03 | Shared zod schemas for all REST bodies and socket payloads                                                                                                              | NOT STARTED |
-| P2-T04 | Shared error codes and defaults (`DEFAULT_COUNTDOWN_DURATION_MS = 5000`)                                                                                                | NOT STARTED |
-| P2-T05 | Extend server env validation (`apps/server/src/config/env.ts`, created in P1 for `NODE_ENV`, `HOST`, `PORT`) with the Phase 2 variables; fail fast on missing variables | NOT STARTED |
-| P2-T06 | Transition table and `CeremonyService` (synchronous decisions, `version`, `runId`, opening timer)                                                                       | NOT STARTED |
-| P2-T07 | Exhaustive unit tests for transitions, exactly-once countdown and timer cancellation                                                                                    | NOT STARTED |
-| P2-T08 | Express app: JSON limits, CORS allowlist, error middleware, `GET /api/health`                                                                                           | NOT STARTED |
-| P2-T09 | Socket.IO server bootstrap with CORS allowlist and typed events                                                                                                         | NOT STARTED |
-| P2-T10 | Structured logger with secret redaction; activity log service                                                                                                           | NOT STARTED |
+| ID     | Task                                                                                                                                                                    | Status |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| P2-T01 | Shared types: `CeremonyStatus`, `Role`, `GuestRole`, `CeremonyState`, `CountdownInfo`, `DeviceStatus`, `ActivityEntry`                                                  | DONE   |
+| P2-T02 | Shared event name constants and typed event maps                                                                                                                        | DONE   |
+| P2-T03 | Shared zod schemas for all REST bodies and socket payloads                                                                                                              | DONE   |
+| P2-T04 | Shared error codes and defaults (`DEFAULT_COUNTDOWN_DURATION_MS = 5000`)                                                                                                | DONE   |
+| P2-T05 | Extend server env validation (`apps/server/src/config/env.ts`, created in P1 for `NODE_ENV`, `HOST`, `PORT`) with the Phase 2 variables; fail fast on missing variables | DONE   |
+| P2-T06 | Transition table and `CeremonyService` (synchronous decisions, `version`, `runId`, opening timer)                                                                       | DONE   |
+| P2-T07 | Exhaustive unit tests for transitions, exactly-once countdown and timer cancellation                                                                                    | DONE   |
+| P2-T08 | Express app: JSON limits, CORS allowlist, error middleware, `GET /api/health`                                                                                           | DONE   |
+| P2-T09 | Socket.IO server bootstrap with CORS allowlist and typed events                                                                                                         | DONE   |
+| P2-T10 | Structured logger with secret redaction; activity log service                                                                                                           | DONE   |
 
 **Deliverables:** `packages/shared` contracts; server with state machine, health endpoint and logging.
+
+**Implementation notes (Phase 2):**
+
+- Ceremony state is **in-memory only**. A process restart returns to `WAITING` with a new `runId`. Pending countdown timers do not survive a restart. Organizers must prepare a fresh run. Future options (snapshot file or PostgreSQL) remain documented for P8-T07 if rehearsal shows a need.
+- `GET /api/event/state` is available in development and test without a session. In production it returns `UNAUTHORIZED` until Phase 3 authentication.
+- Socket.IO accepts connections and delivers `event:state` / `clock:sync` without auth as a transport foundation. `guest:activate` is **not** registered. Admin commands are **not** exposed over REST or sockets yet.
+- `GET /api/health` also returns `status` and `environment` (safe, non-secret) in addition to `serverTime`.
 
 **Acceptance criteria:**
 
@@ -136,18 +143,18 @@ flowchart LR
 
 **Dependencies:** Phase 2.
 
-| ID     | Task                                                                                                                                              | Status      |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| P3-T01 | Auth service: constant-time credential checks, scrypt admin hash (with a documented way to generate `ADMIN_PASSWORD_HASH`), signed session tokens | NOT STARTED |
-| P3-T02 | `POST /api/auth/guest`, `/api/auth/display`, `/api/auth/admin`, `GET /api/auth/session`                                                           | NOT STARTED |
-| P3-T03 | REST auth middleware and permission map                                                                                                           | NOT STARTED |
-| P3-T04 | Socket.IO handshake authentication, rooms, `socket.data.role`                                                                                     | NOT STARTED |
-| P3-T05 | Web API client and socket client (`NEXT_PUBLIC_SERVER_URL`, credentials, reconnection)                                                            | NOT STARTED |
-| P3-T06 | Login form component used by guest, display and admin routes                                                                                      | NOT STARTED |
-| P3-T07 | Guest routes `/guest/chief`, `/guest/vice-chancellor`, `/guest/dean` with role check                                                              | NOT STARTED |
-| P3-T08 | `SlideToActivate` component (touch, pointer, keyboard alternative, reduced motion)                                                                | NOT STARTED |
-| P3-T09 | Connection indicator component                                                                                                                    | NOT STARTED |
-| P3-T10 | Integration tests for auth flows (TS-06, TS-19)                                                                                                   | NOT STARTED |
+| ID     | Task                                                                                                     | Status |
+| ------ | -------------------------------------------------------------------------------------------------------- | ------ |
+| P3-T01 | In-memory guest device sessions (signed HttpOnly cookie, one active tablet per role, reconnect grace)    | DONE   |
+| P3-T02 | `POST /api/guest-sessions/assign`, `GET /api/guest-sessions/current`, `POST /api/guest-sessions/release` | DONE   |
+| P3-T03 | Guest session middleware for ceremony state; assignment rate limit                                       | DONE   |
+| P3-T04 | Socket.IO handshake from the device-session cookie, rooms, `socket.data.role`, `guest:activate`          | DONE   |
+| P3-T05 | Same-origin API and Socket.IO via Next.js rewrites (cookie stays first-party)                            | DONE   |
+| P3-T06 | `/guest` role selection (not a password form). Organizer hands each tablet to the named guest            | DONE   |
+| P3-T07 | Guest routes `/guest/chief`, `/guest/vice-chancellor`, `/guest/dean` with session role check             | DONE   |
+| P3-T08 | `SlideToActivate` (pointer events, keyboard alternative) wired to `guest:activate`                       | DONE   |
+| P3-T09 | Connection indicator component                                                                           | DONE   |
+| P3-T10 | Integration tests for assignment, duplicate role, forged payload, unauthenticated socket                 | DONE   |
 
 **Deliverables:** working login for all roles; tablet pages rendering state from the server (activation not yet wired).
 
@@ -165,16 +172,16 @@ flowchart LR
 
 **Dependencies:** Phase 3.
 
-| ID     | Task                                                                                       | Status      |
-| ------ | ------------------------------------------------------------------------------------------ | ----------- |
-| P4-T01 | `guest:activate` handler: permission, strict payload, call `CeremonyService.activate`, ack | NOT STARTED |
-| P4-T02 | Broadcast `event:state` on connect and on every change; domain events per spec             | NOT STARTED |
-| P4-T03 | `clock:sync` handler                                                                       | NOT STARTED |
-| P4-T04 | Client hook for ceremony snapshot with `version` and `runId` handling                      | NOT STARTED |
-| P4-T05 | Client server-clock hook (offset estimation, re-sync on reconnect)                         | NOT STARTED |
-| P4-T06 | Tablet states: wait, enabled, pending, activated, reconnecting                             | NOT STARTED |
-| P4-T07 | Presence service and `device:status`                                                       | NOT STARTED |
-| P4-T08 | Integration tests TS-01 to TS-07, TS-13, TS-14, TS-16                                      | NOT STARTED |
+| ID     | Task                                                                                       | Status                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| P4-T01 | `guest:activate` handler: permission, strict payload, call `CeremonyService.activate`, ack | DONE (wired in Phase 3 with device sessions)                                               |
+| P4-T02 | Broadcast `event:state` on connect and on every change; domain events per spec             | DONE                                                                                       |
+| P4-T03 | `clock:sync` handler                                                                       | DONE                                                                                       |
+| P4-T04 | Client hook for ceremony snapshot with `version` and `runId` handling                      | DONE                                                                                       |
+| P4-T05 | Client server-clock hook (offset estimation, re-sync on reconnect)                         | DONE                                                                                       |
+| P4-T06 | Tablet states: wait, enabled, pending, activated, reconnecting                             | DONE                                                                                       |
+| P4-T07 | Presence service and `device:status`                                                       | DONE (guest and display roles; admin room still receives the event)                        |
+| P4-T08 | Integration tests TS-01 to TS-07, TS-13, TS-14, TS-16                                      | DONE for the guest/display paths. Admin cases in TS-06, TS-10 and TS-11 stay with Phase 7. |
 
 **Deliverables:** three tablets can activate; server starts countdown exactly once.
 
@@ -191,16 +198,16 @@ flowchart LR
 
 **Dependencies:** Phase 2 (contracts), Phase 4 (live events).
 
-| ID     | Task                                                                 | Status      |
-| ------ | -------------------------------------------------------------------- | ----------- |
-| P5-T01 | `/display` route with display authentication and fullscreen handling | NOT STARTED |
-| P5-T02 | Waiting and ready screens                                            | NOT STARTED |
-| P5-T03 | Activation progress screen with three guest indicators               | NOT STARTED |
-| P5-T04 | Countdown screen rendered from `opensAt` and server clock offset     | NOT STARTED |
-| P5-T05 | Opening screen (static version; animation in Phase 6)                | NOT STARTED |
-| P5-T06 | Aborted screen                                                       | NOT STARTED |
-| P5-T07 | Refresh and reconnect recovery, including mid-countdown resume       | NOT STARTED |
-| P5-T08 | E2E tests TS-03, TS-08, TS-18                                        | NOT STARTED |
+| ID     | Task                                                                 | Status                                                                                                                                               |
+| ------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P5-T01 | `/display` route with display authentication and fullscreen handling | DONE as `/` with a display device session (no password). Fullscreen is an operator control.                                                          |
+| P5-T02 | Waiting and ready screens                                            | DONE                                                                                                                                                 |
+| P5-T03 | Activation progress screen with three guest indicators               | DONE                                                                                                                                                 |
+| P5-T04 | Countdown screen rendered from `opensAt` and server clock offset     | DONE                                                                                                                                                 |
+| P5-T05 | Opening screen (static version; animation in Phase 6)                | DONE with a CSS reveal. Official motion treatment can still be refined.                                                                              |
+| P5-T06 | Aborted screen                                                       | DONE                                                                                                                                                 |
+| P5-T07 | Refresh and reconnect recovery, including mid-countdown resume       | DONE                                                                                                                                                 |
+| P5-T08 | E2E tests TS-03, TS-08, TS-18                                        | DONE for the guest-to-display path. Two-browser digit timing (NFR-002) is covered by the shared countdown maths, not a second browser clock harness. |
 
 **Deliverables:** complete display flow without audio and final animation.
 
@@ -218,15 +225,15 @@ flowchart LR
 
 **Dependencies:** Phase 5; audio and animation assets (PENDING).
 
-| ID     | Task                                                                 | Status                    |
-| ------ | -------------------------------------------------------------------- | ------------------------- |
-| P6-T01 | Obtain licensed audio files: ambient, activation, countdown, opening | BLOCKED (awaiting assets) |
-| P6-T02 | Audio manager: preload, unlock control, status, failure logging      | NOT STARTED               |
-| P6-T03 | Audio cues bound to server events and `startsAt`                     | NOT STARTED               |
-| P6-T04 | Opening animation with Motion, triggered by `event:opened`           | NOT STARTED               |
-| P6-T05 | Tablet activation feedback animation and optional sound              | NOT STARTED               |
-| P6-T06 | Abort cancels audio and animation immediately                        | NOT STARTED               |
-| P6-T07 | Tests TS-11 (display side) and TS-12                                 | NOT STARTED               |
+| ID     | Task                                                                 | Status                                                                                                                  |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| P6-T01 | Obtain licensed audio files: ambient, activation, countdown, opening | BLOCKED (awaiting assets)                                                                                               |
+| P6-T02 | Audio manager: preload, unlock control, status, failure logging      | DONE (placeholder tones)                                                                                                |
+| P6-T03 | Audio cues bound to server events and `startsAt`                     | DONE (placeholder tones)                                                                                                |
+| P6-T04 | Opening animation with Motion, triggered by `event:opened`           | DONE with CSS. The `motion` package was not added.                                                                      |
+| P6-T05 | Tablet activation feedback animation and optional sound              | DONE as server-driven status copy. Tablet audio was left off so the venue sound stays on the display.                   |
+| P6-T06 | Abort cancels audio and animation immediately                        | DONE                                                                                                                    |
+| P6-T07 | Tests TS-11 (display side) and TS-12                                 | PARTIAL. Audio failure is a unit test. Admin abort UI is Phase 7. Server abort-during-countdown is an integration test. |
 
 **Deliverables:** full audiovisual ceremony on the display.
 
@@ -322,14 +329,14 @@ flowchart LR
 
 Tracked in detail in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#11-open-decisions).
 
-| Decision                                | Status  | Blocks |
-| --------------------------------------- | ------- | ------ |
-| Venue network                           | PENDING | P9-T01 |
-| State persistence across server restart | PENDING | P8-T07 |
-| Credential delivery to tablets          | PENDING | P9-T03 |
-| Device hardware                         | PENDING | P9-T02 |
-| Official logo files and usage approval  | PENDING | P0-T10 |
-| Brand colour confirmation               | PENDING | P0-T09 |
-| Guest display names and titles          | PENDING | P0-T11 |
-| Who may use emergency manual start      | PENDING | P9-T07 |
-| Audio assets and licensing              | PENDING | P6-T01 |
+| Decision                                | Status                                                                                       | Blocks |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- | ------ |
+| Venue network                           | PENDING                                                                                      | P9-T01 |
+| State persistence across server restart | DECIDED: in-memory for the event (Phase 2). Revisit only if rehearsal proves a need (P8-T07) | P8-T07 |
+| Credential delivery to tablets          | PENDING                                                                                      | P9-T03 |
+| Device hardware                         | PENDING                                                                                      | P9-T02 |
+| Official logo files and usage approval  | PENDING                                                                                      | P0-T10 |
+| Brand colour confirmation               | PENDING                                                                                      | P0-T09 |
+| Guest display names and titles          | PENDING                                                                                      | P0-T11 |
+| Who may use emergency manual start      | PENDING                                                                                      | P9-T07 |
+| Audio assets and licensing              | PENDING                                                                                      | P6-T01 |

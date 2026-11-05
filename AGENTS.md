@@ -27,7 +27,7 @@ A synchronized, web-based opening ceremony. Three guests (Chief Guest, Vice Chan
 
 | Interface              | Route                    | Role              |
 | ---------------------- | ------------------------ | ----------------- |
-| Main Display           | `/display`               | `display`         |
+| Main Display           | `/`                      | `display`         |
 | Chief Guest tablet     | `/guest/chief`           | `chief`           |
 | Vice Chancellor tablet | `/guest/vice-chancellor` | `vice-chancellor` |
 | Dean of IT tablet      | `/guest/dean`            | `dean`            |
@@ -35,7 +35,7 @@ A synchronized, web-based opening ceremony. Three guests (Chief Guest, Vice Chan
 
 Business rule: the countdown starts only when `chief`, `vice-chancellor` and `dean` all have server-accepted activations, or after an authorized emergency manual start.
 
-This is **purely web-based**. There is no hardware, door control, IoT, or physical-device integration. See [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md).
+This is **purely web-based**. The ceremony display is the `/` page in a browser on the ceremony laptop. A projector shows that laptop screen through HDMI mirroring or an extended desktop. There is no projector application, projector API, screen-sharing feature, door control, IoT, or other hardware integration. See [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md).
 
 ## 2. Technology stack
 
@@ -65,7 +65,7 @@ Do not swap any of these without updating this file and [docs/ARCHITECTURE.md](d
 | Tailwind CSS                        | 4.3                    |                                                                                                         |
 | Express / zod / Vitest / Playwright | 5.3 / 4.6 / 5.1 / 1.64 |                                                                                                         |
 
-Packages not yet installed because their phase has not started: `socket.io` and `socket.io-client` (Phase 2 to 4), `motion` (Phase 6), `supertest` (Phase 2 integration tests). Add each one only in the phase that uses it.
+Packages not yet installed because their phase has not started: `motion` (Phase 6). `socket.io` is on the server; `socket.io-client` and `supertest` are server test dependencies (web client Socket.IO arrives in Phase 3/4). Add each new dependency only in the phase that uses it.
 
 Dependency build scripts are blocked by pnpm by default. Approved exceptions live under `allowBuilds` in `pnpm-workspace.yaml` (currently only `esbuild`, needed by `tsx`). Approve a new one only when it is required and explain why.
 

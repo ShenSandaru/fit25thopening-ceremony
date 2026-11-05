@@ -110,9 +110,12 @@ Rules:
   - Tablets: portrait and landscape, roughly 768 to 1366 CSS px wide. Final models **PENDING**.
   - Admin: laptop first (1280 px and up), usable on a tablet.
 
-## 7. Main display principles (`/display`)
+## 7. Main display principles (`/`)
+
+The display is the browser on the ceremony laptop. HDMI mirroring and an extended desktop both show that same window; the page does not choose a monitor or talk to the projector. The operator moves the window onto the projected screen, then uses the browser fullscreen control.
 
 - Premium, ceremonial look: deep navy fields, gold accents and fine gold rules, restrained use of white.
+- A 16:9 stage fills the browser viewport. Wider or taller windows keep the stage at 16:9 and letterbox the rest, so mirroring a 16:10 laptop and a 16:9 projector both stay readable.
 - One focal element per screen. Never show more than one primary message at a time.
 - Readable from the back of the venue (NFR-006): body text at least 48 px at 1080p; countdown numerals at least 40% of viewport height; headings in Outfit.
 - Three guest indicators during `COLLECTING_ACTIVATIONS`, showing role titles (names and titles from configuration, **PENDING** confirmation). An indicator lights up only after the server accepts that activation.

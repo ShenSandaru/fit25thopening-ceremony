@@ -6,13 +6,13 @@ Three distinguished guests (the Chief Guest, the Vice Chancellor and the Dean of
 
 ## Current status
 
-**Phase 1 complete: monorepo and application setup.** The workspace, the three packages, tooling, tests, environment validation and brand tokens are in place. No ceremony functionality exists yet: there are no guest, display or admin screens, no authentication, no Socket.IO and no ceremony state. Progress is tracked in [PLAN.md](PLAN.md).
+**Phase 4 complete: main display and live synchronization.** `/` is the ceremony display in a browser on the ceremony laptop. The projector shows that screen by mirroring or an extended desktop. An organizer assigns each tablet at `/guest` and uses **Begin activations** on the display. The server starts the countdown only after all three activations. The display follows server timestamps. Audio files under `public/audio/placeholders/` are temporary tones, not official ceremony audio. The admin dashboard is still later. A backend restart clears device sessions and ceremony state.
 
 ## Interfaces
 
 | Interface              | Route                    |
 | ---------------------- | ------------------------ |
-| Main Display           | `/display`               |
+| Main Display           | `/`                      |
 | Chief Guest tablet     | `/guest/chief`           |
 | Vice Chancellor tablet | `/guest/vice-chancellor` |
 | Dean of IT tablet      | `/guest/dean`            |
@@ -41,12 +41,12 @@ Installed now:
 
 - TypeScript 6.0 (strict) in a pnpm 12 workspaces monorepo
 - Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS 4
-- Node.js 24, Express 5
-- zod 4 for environment validation (and, from Phase 2, shared payload schemas)
-- Vitest 5 for unit tests, Playwright for end-to-end tests
+- Node.js 24, Express 5, Socket.IO 4
+- zod 4 for environment validation and shared payload schemas
+- Vitest 5, Supertest, socket.io-client for backend tests; Playwright for web e2e
 - ESLint 9 and Prettier
 
-Added in later phases: Socket.IO server and client, Motion, Supertest. No database for now.
+Added in later phases: Motion (animations), auth credentials validation. No database; ceremony state is in-memory.
 
 ## Repository layout
 
@@ -75,7 +75,17 @@ cp apps/server/.env.example apps/server/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-On Windows PowerShell use `Copy-Item` instead of `cp`. Both apps also start without these files and use the documented defaults; the server validates its variables at startup and exits with an error that names any invalid variable.
+On Windows PowerShell use `Copy-Item` instead of `cp`.
+
+Server required variables (see `apps/server/.env.example`): `CORS_ORIGINS`, `SESSION_SECRET` (at least 32 characters). Optional: `COUNTDOWN_DURATION_MS` (default 5000), `PREPARATION_DELAY_MS` (default 0), `LOG_LEVEL`. The server exits on startup if required variables are missing or invalid, naming the variable without printing its value.
+
+Quick checks after `pnpm build` and configuring `.env`:
+
+```bash
+pnpm start:server
+curl http://127.0.0.1:4000/api/health
+curl http://127.0.0.1:4000/api/event/state   # development/test only until Phase 3 auth
+```
 
 ## Development
 

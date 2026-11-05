@@ -1,6 +1,6 @@
 # Testing Strategy
 
-> Status: Vitest (in `packages/shared`, `apps/server` and `apps/web`) and Playwright (in `apps/web`, Chromium project, smoke test in `apps/web/e2e/`) were set up in Phase 1. Supertest and `socket.io-client` are added with the Phase 2 integration tests. Scenario tests below are not implemented yet (see [PLAN.md](../PLAN.md)). Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
+> Status: Phases 2–4 automated the ceremony state machine, device sessions, guest activation, display countdown recovery, and placeholder-audio failure. Admin abort, reset, and manual start remain Phase 7. Requirement IDs refer to [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. Test levels and tools (proposed)
 

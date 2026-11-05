@@ -1,6 +1,6 @@
 # Security
 
-> Status: Proposed security design, not yet implemented. Contracts referenced here are defined in [API_SPECIFICATION.md](API_SPECIFICATION.md).
+> Status: Guest access is a **device session**, not a password account. An organizer assigns each tablet on `/guest`. The server stores one active session per guest role, sets an HttpOnly cookie, and derives the role from that cookie on REST and Socket.IO. Admin password authentication is still a later phase.
 
 ## 1. Threat model (summary)
 
@@ -13,6 +13,19 @@ The system runs on a venue network for a single live event. Realistic risks:
 - The network is shared (for example, university Wi-Fi) and traffic may be observable.
 
 Goal: no one can trigger, block, or fake any ceremony step without the right credential, and the server rejects anything that does not follow the state machine.
+
+### Phase 2 authentication boundary (current)
+
+| Surface                                                           | Phase 2 behaviour                                                                |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `GET /api/health`                                                 | Public                                                                           |
+| `GET /api/event/state`                                            | Available without session in development/test only; `UNAUTHORIZED` in production |
+| Socket.IO connection                                              | Allowed without session; receives `event:state`; may call `clock:sync`           |
+| `guest:activate`                                                  | **Not registered** on the socket server                                          |
+| Admin REST (`prepare`, `start`, `abort`, `reset`, `manual-start`) | **Not exposed**                                                                  |
+| `CeremonyService` mutations                                       | Callable only in-process (unit tests / future authenticated handlers)            |
+
+Phase 3 must replace the interim event-state gate with real session auth and refuse unauthenticated sockets.
 
 ## 2. Roles and permissions (RBAC)
 

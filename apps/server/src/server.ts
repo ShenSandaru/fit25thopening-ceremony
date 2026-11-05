@@ -1,9 +1,8 @@
-import { createServer } from "node:http";
 import { PROJECT_NAME } from "@fit-expo/shared";
-import { createApp } from "./app.js";
-import { EnvValidationError, parseServerEnv, type ServerEnv } from "./config/env.js";
+import { EnvValidationError, parseServerEnv } from "./config/env.js";
+import { createRuntime } from "./create-runtime.js";
 
-function loadEnv(): ServerEnv {
+function loadEnv() {
   try {
     return parseServerEnv(process.env);
   } catch (error) {
@@ -16,19 +15,30 @@ function loadEnv(): ServerEnv {
 }
 
 const env = loadEnv();
-const httpServer = createServer(createApp());
+const runtime = createRuntime(env);
 
-httpServer.listen(env.PORT, env.HOST, () => {
-  console.info(
-    `${PROJECT_NAME} server listening on http://${env.HOST}:${env.PORT} (${env.NODE_ENV})`,
-  );
+runtime.logger.info(`${PROJECT_NAME} starting`, {
+  host: env.HOST,
+  port: env.PORT,
+  environment: env.NODE_ENV,
+  persistence: "in-memory",
+});
+
+runtime.httpServer.listen(env.PORT, env.HOST, () => {
+  runtime.logger.info(`${PROJECT_NAME} server listening`, {
+    url: `http://${env.HOST}:${env.PORT}`,
+    environment: env.NODE_ENV,
+  });
 });
 
 function shutdown(signal: NodeJS.Signals): void {
-  console.info(`Received ${signal}, shutting down`);
-  httpServer.close((error) => {
+  runtime.logger.info("Shutting down", { signal });
+  runtime.httpServer.close((error) => {
+    runtime.dispose();
     if (error) {
-      console.error("Error while closing HTTP server", error);
+      runtime.logger.error("Error while closing HTTP server", {
+        message: error.message,
+      });
       process.exit(1);
     }
     process.exit(0);

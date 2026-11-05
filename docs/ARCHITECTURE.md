@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: Workspace and package build model implemented in Phase 1. Everything else is proposed and not yet implemented. Changes to this document require updating [AGENTS.md](../AGENTS.md), [API_SPECIFICATION.md](API_SPECIFICATION.md) and [REQUIREMENTS.md](REQUIREMENTS.md) where affected.
+> Status: Phases 1–4 are implemented. Guest tablets and the main display at `/` use in-memory device sessions (one active session per role, HttpOnly cookie, reconnect grace). `guest:activate` uses the session role. The display derives its screen from `event:state` and renders the countdown from `opensAt` plus a `clock:sync` offset. Until the admin dashboard exists, the display session may call `POST /api/event/begin-activations` to enter `COLLECTING_ACTIVATIONS`. Official audio is still pending; the display plays labelled local placeholders. A backend restart clears device sessions and ceremony state.
 
 ## 1. High-level architecture
 
@@ -12,7 +12,7 @@ flowchart LR
     Chief["/guest/chief"]
     VC["/guest/vice-chancellor"]
     Dean["/guest/dean"]
-    Display["/display"]
+    Display["/ ceremony laptop browser"]
     AdminUI["/admin"]
   end
   subgraph web [apps/web - Next.js]
@@ -47,6 +47,12 @@ Workspace packages (proposed names):
 | `@fit-expo/web`    | `apps/web`        | Next.js App Router UI for all five interfaces             |
 | `@fit-expo/server` | `apps/server`     | Express REST API, Socket.IO server, ceremony state        |
 | `@fit-expo/shared` | `packages/shared` | Types, constants, event names, zod schemas shared by both |
+
+Backend foundation (implemented in Phase 2):
+
+- `apps/server/src/state/CeremonyService` owns all ceremony mutations (synchronous decisions, injectable clock, opening timer).
+- `apps/server/src/create-runtime.ts` wires Express, Socket.IO, activity log and the ceremony service for both production and tests.
+- REST today: `GET /api/health`, interim `GET /api/event/state`. Socket today: connect → `event:state`, `clock:sync`. No public activation or admin commands yet.
 
 Package build model (implemented in Phase 1):
 
@@ -277,25 +283,25 @@ flowchart TB
 
 ## 10. Error and recovery handling
 
-| Situation                            | Behaviour                                                                                                                                                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tablet disconnects after activating  | Activation remains recorded. Presence shows the tablet disconnected. On reconnect the tablet receives `event:state` and shows "activated".                       |
-| Tablet disconnects before activating | Nothing changes. Guest re-opens the page or it reconnects automatically; slider is available if still `COLLECTING_ACTIVATIONS`.                                  |
-| Display refreshed or disconnected    | Re-authenticates via cookie, reconnects, receives `event:state`, renders current state (resuming countdown if active).                                           |
-| Admin disconnected                   | Ceremony continues unaffected; admin reconnects and receives state, presence and recent activity.                                                                |
-| Backend unreachable briefly          | Clients show "reconnecting"; no client advances the ceremony. On reconnect they render the server state. The server timer continues independently.               |
-| Backend process restarts             | In-memory state is lost and returns to `WAITING`. Whether to persist state is an open decision (section 11). Operators must be trained on this during rehearsal. |
-| Audio fails                          | Logged; visual sequence proceeds unchanged (FR-062).                                                                                                             |
-| Invalid request                      | Rejected with a typed error code (see [API_SPECIFICATION.md](API_SPECIFICATION.md#2-conventions)); logged; never silently ignored.                               |
-| Unexpected server error              | Error middleware returns `INTERNAL_ERROR` without stack traces; full detail is logged server-side.                                                               |
+| Situation                            | Behaviour                                                                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tablet disconnects after activating  | Activation remains recorded. Presence shows the tablet disconnected. On reconnect the tablet receives `event:state` and shows "activated".                               |
+| Tablet disconnects before activating | Nothing changes. Guest re-opens the page or it reconnects automatically; slider is available if still `COLLECTING_ACTIVATIONS`.                                          |
+| Display refreshed or disconnected    | Re-authenticates via cookie, reconnects, receives `event:state`, renders current state (resuming countdown if active).                                                   |
+| Admin disconnected                   | Ceremony continues unaffected; admin reconnects and receives state, presence and recent activity.                                                                        |
+| Backend unreachable briefly          | Clients show "reconnecting"; no client advances the ceremony. On reconnect they render the server state. The server timer continues independently.                       |
+| Backend process restarts             | In-memory state is discarded. The new process starts in `WAITING` with a new `runId`. Countdown timers do not survive. Organizers must prepare a fresh run (section 11). |
+| Audio fails                          | Logged; visual sequence proceeds unchanged (FR-062).                                                                                                                     |
+| Invalid request                      | Rejected with a typed error code (see [API_SPECIFICATION.md](API_SPECIFICATION.md#2-conventions)); logged; never silently ignored.                                       |
+| Unexpected server error              | Error middleware returns `INTERNAL_ERROR` without stack traces; full detail is logged server-side.                                                                       |
 
 ## 11. Open decisions
 
-| Topic                                   | Status       | Notes                                                                                                                    |
-| --------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Venue network                           | PENDING      | University Wi-Fi vs dedicated router vs other. Decide after venue survey and rehearsal.                                  |
-| State persistence across server restart | PENDING      | Options: none (current), snapshot file written after each transition, or PostgreSQL. Add only if rehearsal shows a need. |
-| Credential delivery to tablets          | PENDING      | Typed access code, QR code, or pre-provisioned link opened by organizers before the ceremony.                            |
-| Device hardware                         | PENDING      | Tablet models and browsers; main display resolution and aspect ratio.                                                    |
-| Hosting of the web and server processes | PENDING      | Single venue laptop vs dedicated machine; must be on the chosen network.                                                 |
-| Countdown preparation delay             | DEFAULT 0 ms | Configurable via `PREPARATION_DELAY_MS`; not required.                                                                   |
+| Topic                                   | Status                            | Notes                                                                                                                                                                                                   |
+| --------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Venue network                           | PENDING                           | University Wi-Fi vs dedicated router vs other. Decide after venue survey and rehearsal.                                                                                                                 |
+| State persistence across server restart | DECIDED (Phase 2): in-memory only | A restart loses state and returns to `WAITING`. Snapshot file or PostgreSQL only if rehearsal (P8-T07) proves a need.                                                                                   |
+| Credential delivery to tablets          | PENDING                           | Typed access code, QR code, or pre-provisioned link opened by organizers before the ceremony.                                                                                                           |
+| Device hardware                         | PARTLY DECIDED                    | The display is a laptop browser. The projector mirrors that screen or uses it as an extended desktop. There is no projector integration. Tablet models and the exact 16:9 resolution are still pending. |
+| Hosting of the web and server processes | PENDING                           | Single venue laptop vs dedicated machine; must be on the chosen network.                                                                                                                                |
+| Countdown preparation delay             | DEFAULT 0 ms                      | Configurable via `PREPARATION_DELAY_MS`; not required.                                                                                                                                                  |
