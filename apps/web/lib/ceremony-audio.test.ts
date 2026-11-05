@@ -105,7 +105,7 @@ describe("CeremonyAudio", () => {
     expect(CEREMONY_AUDIO_CONFIG.cues.opening).toBe("/audio/placeholders/fitexpo.wav");
   });
 
-  it("fades out fitexpo.wav after 5 seconds and smoothly resumes background music", async () => {
+  it("fades out fitexpo.wav after 4.5 seconds and smoothly resumes background music", async () => {
     const { factory, played, paused, instances } = fakeFactory(true);
     const audio = new CeremonyAudio(factory);
     audio.preload();
@@ -122,8 +122,8 @@ describe("CeremonyAudio", () => {
     expect(played).toContain("/audio/placeholders/fitexpo.wav");
     expect(voiceClip.volume).toBe(1);
 
-    // Advance 5 seconds: voice clip begins fading out and bg_music resumes from 18.4s
-    await vi.advanceTimersByTimeAsync(5_000);
+    // Advance 4.5 seconds: voice clip begins fading out and bg_music resumes from 18.4s
+    await vi.advanceTimersByTimeAsync(4_500);
     expect(bgClip.currentTime).toBe(18.4);
 
     // Advance through the 2-second fade transition

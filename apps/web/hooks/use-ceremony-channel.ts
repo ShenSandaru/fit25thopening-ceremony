@@ -109,8 +109,8 @@ export function useCeremonyChannel(
           // Immediately mute / pause background music when countdown commences
           audioRef.current?.pauseBackground(true);
         } else if (incoming.status === "OPENED") {
-          // Pause background music during the 5-second fitexpo.wav voiceover;
-          // playCue("impact") automatically fades out fitexpo.wav after 5s and resumes bg_music.mp3
+          // Pause background music during the 4.5-second fitexpo.wav voiceover;
+          // playCue("impact") automatically fades out fitexpo.wav after 4.5s and resumes bg_music.mp3
           audioRef.current?.pauseBackground(true);
           audioRef.current?.playCue("impact");
         } else if (incoming.status === "ABORTED") {

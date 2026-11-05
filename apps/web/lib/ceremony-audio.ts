@@ -32,7 +32,7 @@ export const CEREMONY_AUDIO_CONFIG = {
     standardMs: 800,
     quickCutMs: 250,
     launchFadeInMs: 2000,
-    voiceoverHoldMs: 5000,
+    voiceoverHoldMs: 4500,
     voiceoverFadeOutMs: 2000,
   },
 } as const;
@@ -340,7 +340,7 @@ export class CeremonyAudio {
             : CEREMONY_AUDIO_CONFIG.volumes.impactCue;
 
     if (name === "impact" || name === "opening") {
-      // Keep background music paused while the 5-second inauguration voiceover plays
+      // Keep background music paused while the 4.5-second inauguration voiceover plays
       this.pauseBackground(true);
       this.clearFadeForClip(clip);
     }
@@ -354,7 +354,7 @@ export class CeremonyAudio {
       });
 
       if (name === "impact" || name === "opening") {
-        // After 5 seconds of the fitexpo.wav voice clip, gradually reduce its sound
+        // After 4.5 seconds of the fitexpo.wav voice clip, gradually reduce its sound
         // and smoothly continue the previous background music track.
         const holdTimer = setTimeout(() => {
           this.fadeVolume(clip, 0, CEREMONY_AUDIO_CONFIG.fades.voiceoverFadeOutMs, () => {
