@@ -2,12 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-type FuturisticHudOverlayProps = {
-  connected: boolean;
-  audioUnavailable: boolean;
-};
-
-export function FuturisticHudOverlay({ connected, audioUnavailable }: FuturisticHudOverlayProps) {
+export function FuturisticHudOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Ambient floating energy particles
@@ -32,8 +27,12 @@ export function FuturisticHudOverlay({ connected, audioUnavailable }: Futuristic
     };
     window.addEventListener("resize", handleResize);
 
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     // Particle definition
-    const particleCount = 45;
+    const particleCount = prefersReducedMotion ? 20 : 45;
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -48,15 +47,17 @@ export function FuturisticHudOverlay({ connected, audioUnavailable }: Futuristic
       ctx.clearRect(0, 0, width, height);
 
       for (const p of particles) {
-        p.y -= p.speedY;
-        p.x += p.speedX;
+        if (!prefersReducedMotion) {
+          p.y -= p.speedY;
+          p.x += p.speedX;
 
-        if (p.y < 0) {
-          p.y = height;
-          p.x = Math.random() * width;
+          if (p.y < 0) {
+            p.y = height;
+            p.x = Math.random() * width;
+          }
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
         }
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -68,13 +69,17 @@ export function FuturisticHudOverlay({ connected, audioUnavailable }: Futuristic
         ctx.fill();
       }
 
-      animationFrameId = requestAnimationFrame(render);
+      if (!prefersReducedMotion) {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
 
     render();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       window.removeEventListener("resize", handleResize);
     };
   }, []);
@@ -108,7 +113,7 @@ export function FuturisticHudOverlay({ connected, audioUnavailable }: Futuristic
       {/* Technical HUD Framing Brackets */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-6 z-10 border border-cyan-500/20"
+        className="pointer-events-none absolute inset-4 sm:inset-6 z-10 border border-cyan-500/20"
       >
         {/* Top-Left Corner */}
         <div className="absolute -top-1 -left-1 size-6 border-t-2 border-l-2 border-gold" />
@@ -120,31 +125,21 @@ export function FuturisticHudOverlay({ connected, audioUnavailable }: Futuristic
         <div className="absolute -top-1 -right-1 size-6 border-t-2 border-r-2 border-gold" />
         <div className="absolute top-2 right-3 flex items-center gap-2 font-mono text-[10px] tracking-widest text-cyan-400/60 uppercase">
           <span className="size-1.5 animate-pulse rounded-full bg-cyan-400" />
-          QUANTUM CORE // STABLE
+          QUANTUM CORE // TRIPLE-BIOMETRIC
         </div>
 
-        {/* Bottom-Left Corner */}
+        {/* Bottom-Left Corner Reticle (Clean, non-colliding) */}
         <div className="absolute -bottom-1 -left-1 size-6 border-b-2 border-l-2 border-gold" />
-        <div className="absolute bottom-2 left-3 flex items-center gap-2 font-mono text-[10px] tracking-widest text-cyan-400/60 uppercase">
-          <span
-            className={`size-1.5 rounded-full ${connected ? "bg-emerald-400" : "bg-red-500"}`}
-          />
-          {connected ? "NEURAL LINK: SYNCHRONIZED" : "NEURAL LINK: RECONNECTING"}
-          {audioUnavailable && " // AUDIO OFFLINE"}
-        </div>
 
-        {/* Bottom-Right Corner */}
+        {/* Bottom-Right Corner Reticle (Clean, non-colliding) */}
         <div className="absolute -bottom-1 -right-1 size-6 border-b-2 border-r-2 border-gold" />
-        <div className="absolute bottom-2 right-3 font-mono text-[10px] tracking-widest text-cyan-400/60 uppercase">
-          SEC.PROTOCOL // TRIPLE-BIOMETRIC
-        </div>
       </div>
 
       {/* Top Holographic Navigation Bar */}
-      <header className="absolute top-10 left-0 right-0 z-20 flex flex-col items-center justify-center text-center">
-        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-500/30 bg-navy-blue/80 px-6 py-1.5 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+      <header className="absolute top-4 sm:top-6 left-0 right-0 z-20 flex flex-col items-center justify-center text-center">
+        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-500/30 bg-navy-blue/80 px-5 py-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.15)]">
           <span className="size-2 animate-ping rounded-full bg-gold" />
-          <p className="font-mono text-xs font-semibold tracking-[0.3em] text-cyan-300 uppercase">
+          <p className="font-mono text-[11px] sm:text-xs font-semibold tracking-[0.3em] text-cyan-300 uppercase">
             Faculty of Information Technology · University of Moratuwa
           </p>
           <span className="size-2 animate-ping rounded-full bg-cyan-400" />

@@ -83,13 +83,10 @@ export function CeremonyDisplay() {
       className="display-stage relative flex h-dvh w-screen items-center justify-center overflow-hidden bg-slate-950 text-white font-sans selection:bg-gold selection:text-navy-blue"
     >
       {/* Sci-Fi HUD Ambient Canvas & Grid Overlay */}
-      <FuturisticHudOverlay
-        connected={channel.connected}
-        audioUnavailable={channel.audioUnavailable}
-      />
+      <FuturisticHudOverlay />
 
       {/* Main Display Stage Container */}
-      <section className="relative z-10 flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-center gap-6 overflow-hidden px-8 py-10 text-center">
+      <section className="relative z-10 flex h-full max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col items-center justify-between overflow-hidden px-4 py-4 sm:px-8 sm:py-6 text-center">
         {/* View-Specific Content Frame */}
         <div className="flex w-full flex-1 flex-col items-center justify-center">
           {view === "reconnecting" ? (
@@ -97,7 +94,7 @@ export function CeremonyDisplay() {
               <div className="size-16 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
               <h1
                 style={{ fontFamily: "var(--font-outfit), Outfit, sans-serif" }}
-                className="font-heading text-5xl font-bold tracking-wide"
+                className="font-heading text-4xl sm:text-5xl font-bold tracking-wide"
               >
                 Connecting to Launch Subsystem…
               </h1>
@@ -105,7 +102,7 @@ export function CeremonyDisplay() {
             </div>
           ) : view === "taken" ? (
             <div className="flex flex-col items-center gap-4">
-              <h1 className="font-heading text-5xl font-bold text-red-400">
+              <h1 className="font-heading text-4xl sm:text-5xl font-bold text-red-400">
                 Display Terminal Active Elsewhere
               </h1>
               <p className="font-mono text-white/70">
@@ -114,7 +111,7 @@ export function CeremonyDisplay() {
             </div>
           ) : view === "guest-browser" ? (
             <div className="flex flex-col items-center gap-4">
-              <h1 className="font-heading text-5xl font-bold text-amber-300">
+              <h1 className="font-heading text-4xl sm:text-5xl font-bold text-amber-300">
                 Tablet Assigned to Guest
               </h1>
               <p className="font-mono text-white/70">
@@ -122,56 +119,49 @@ export function CeremonyDisplay() {
               </p>
             </div>
           ) : view === "welcome" ? (
-            <div className="display-enter flex flex-col items-center gap-6">
-              {/* University of Moratuwa Crest / Branding Frame */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="inline-flex items-center gap-3 rounded-full border border-gold/40 bg-navy-blue/80 px-6 py-1.5 shadow-[0_0_20px_rgba(201,162,39,0.25)] backdrop-blur-md">
-                  <span className="size-2 rounded-full bg-gold animate-ping" />
-                  <span className="font-mono text-xs font-bold tracking-[0.3em] text-gold uppercase">
-                    UNIVERSITY OF MORATUWA
-                  </span>
-                  <span className="size-2 rounded-full bg-cyan-400" />
-                </div>
-                <p className="font-mono text-xs tracking-[0.25em] text-cyan-300 uppercase">
-                  FACULTY OF INFORMATION TECHNOLOGY
-                </p>
+            <div className="display-enter flex flex-col items-center gap-[clamp(0.4rem,1.8vh,1.25rem)] max-w-4xl px-4">
+              {/* Official Ceremony Pill (Clean, avoids duplicating the top HUD institutional header) */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-navy-blue/80 px-4 py-1 text-gold font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase shadow-[0_0_15px_rgba(201,162,39,0.2)]">
+                <span className="size-1.5 rounded-full bg-gold animate-pulse" />
+                OFFICIAL OPENING CEREMONY
+                <span className="size-1.5 rounded-full bg-cyan-400" />
               </div>
 
-              <div className="relative my-1">
-                <RoboticEnergyCore activatedCount={0} />
+              <div className="relative my-0.5">
+                <RoboticEnergyCore activatedCount={0} compact />
               </div>
 
               <h1
                 style={{ fontFamily: "var(--font-outfit), Outfit, sans-serif" }}
-                className="font-heading text-6xl font-black tracking-tight text-white md:text-8xl drop-shadow-[0_0_40px_rgba(201,162,39,0.7)]"
+                className="font-heading text-[clamp(2.75rem,7vh,5.5rem)] font-black tracking-tight text-white leading-none drop-shadow-[0_0_40px_rgba(201,162,39,0.7)]"
               >
                 {PROJECT_NAME}
               </h1>
               <div
                 aria-hidden="true"
-                className="h-1 w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
+                className="h-1 w-40 sm:w-48 rounded-full bg-gold shadow-[0_0_15px_#c9a227]"
               />
-              <p className="font-heading text-2xl font-bold tracking-widest text-cyan-200 md:text-3xl">
+              <p className="font-heading text-lg sm:text-2xl font-bold tracking-widest text-cyan-200">
                 FIT EXPO 2026
               </p>
-              <p className="max-w-3xl font-mono text-base text-white/80 leading-relaxed">
+              <p className="max-w-2xl font-mono text-xs sm:text-sm text-white/80 leading-relaxed">
                 Ceremony display ready. Mirror or extend this window onto the auditorium projector
                 and enable presentation mode. Sound plays from this device.
               </p>
             </div>
           ) : view === "waiting-for-activations" ? (
-            <div className="display-enter flex w-full flex-col items-center gap-8">
+            <div className="display-enter flex w-full flex-col items-center gap-[clamp(0.75rem,2.5vh,2rem)]">
               {/* Dynamic Robotic Core reacting to guest activations */}
               <div className="relative">
-                <RoboticEnergyCore activatedCount={activatedCount} />
+                <RoboticEnergyCore activatedCount={activatedCount} compact />
               </div>
 
               {/* Status Header */}
-              <div className="flex flex-col items-center gap-2">
-                <h1 className="font-heading text-5xl font-extrabold tracking-wide text-white md:text-6xl drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">
+              <div className="flex flex-col items-center gap-1.5">
+                <h1 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-wide text-white drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">
                   WAITING FOR GUEST AUTHORIZATION
                 </h1>
-                <p className="font-mono text-xl tracking-[0.2em] text-cyan-300 md:text-2xl">
+                <p className="font-mono text-base sm:text-xl md:text-2xl tracking-[0.2em] text-cyan-300">
                   {activatedCount} OF 3 BIOMETRIC SIGNALS CONNECTED
                 </p>
               </div>
@@ -187,10 +177,10 @@ export function CeremonyDisplay() {
             <LaunchReveal audioUnavailable={channel.audioUnavailable} />
           ) : (
             <div className="flex flex-col items-center gap-4">
-              <h1 className="font-heading text-5xl font-bold text-amber-400">
+              <h1 className="font-heading text-4xl sm:text-5xl font-bold text-amber-400">
                 Ceremony Sequence Aborted
               </h1>
-              <p className="font-mono text-white/80 text-xl">
+              <p className="font-mono text-white/80 text-lg sm:text-xl">
                 System standing by. Please contact event organizers.
               </p>
             </div>
@@ -198,7 +188,7 @@ export function CeremonyDisplay() {
         </div>
 
         {/* Footer Telemetry & Actions */}
-        <div className="flex w-full items-center justify-between border-t border-white/10 pt-4 text-xs font-mono">
+        <div className="flex w-full items-center justify-between border-t border-white/10 pt-2 sm:pt-3 pb-1 text-[11px] sm:text-xs font-mono">
           <p className="text-white/70" role="status">
             <span
               className={`inline-block size-2 rounded-full mr-2 ${
@@ -210,17 +200,17 @@ export function CeremonyDisplay() {
           </p>
 
           {view === "welcome" ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
-                className="display-control hover:bg-white/10 transition-colors"
+                className="display-control text-xs sm:text-sm hover:bg-white/10 transition-colors"
                 onClick={() => void present()}
               >
                 Enable presentation
               </button>
               <button
                 type="button"
-                className="display-control bg-gold/20 border-gold hover:bg-gold/30 text-gold font-bold transition-all shadow-[0_0_15px_rgba(201,162,39,0.3)]"
+                className="display-control text-xs sm:text-sm bg-gold/20 border-gold hover:bg-gold/30 text-gold font-bold transition-all shadow-[0_0_15px_rgba(201,162,39,0.3)]"
                 onClick={() => void begin()}
               >
                 Begin activations

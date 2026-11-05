@@ -5,6 +5,7 @@ type RoboticEnergyCoreProps = {
   isCountdown?: boolean;
   isOpened?: boolean;
   countdownSeconds?: number | null;
+  compact?: boolean;
 };
 
 export function RoboticEnergyCore({
@@ -12,10 +13,21 @@ export function RoboticEnergyCore({
   isCountdown = false,
   isOpened = false,
   countdownSeconds = null,
+  compact = false,
 }: RoboticEnergyCoreProps) {
   const isFullyCharged = activatedCount === 3 || isCountdown || isOpened;
   const glowColor = isFullyCharged ? "#c9a227" : activatedCount > 0 ? "#38bdf8" : "#00f0ff";
-  const coreScale = isOpened ? "scale-125" : isCountdown ? "scale-110" : "scale-100";
+  const coreScale = compact
+    ? "scale-100"
+    : isOpened
+      ? "scale-110 sm:scale-120"
+      : isCountdown
+        ? "scale-105 sm:scale-110"
+        : "scale-100";
+
+  const svgSize = compact
+    ? "size-[160px] sm:size-[200px] lg:size-[230px]"
+    : "size-[260px] sm:size-[340px] lg:size-[400px]";
 
   return (
     <div
@@ -26,19 +38,19 @@ export function RoboticEnergyCore({
         aria-hidden="true"
         className={`absolute rounded-full transition-all duration-1000 ${
           isOpened
-            ? "size-[500px] bg-gold/30 blur-3xl animate-pulse"
+            ? "size-[360px] sm:size-[460px] bg-gold/30 blur-3xl animate-pulse"
             : isCountdown
-              ? "size-[420px] bg-gold/25 blur-2xl animate-pulse"
+              ? "size-[300px] sm:size-[380px] bg-gold/25 blur-2xl animate-pulse"
               : activatedCount > 0
-                ? "size-[360px] bg-cyan-500/20 blur-2xl"
-                : "size-[300px] bg-blue-600/15 blur-xl"
+                ? "size-[260px] sm:size-[320px] bg-cyan-500/20 blur-2xl"
+                : "size-[220px] sm:size-[280px] bg-blue-600/15 blur-xl"
         }`}
       />
 
       {/* SVG Mechanical Reactor Rings */}
       <svg
         viewBox="0 0 400 400"
-        className="size-[320px] sm:size-[380px] lg:size-[440px] drop-shadow-[0_0_25px_rgba(0,240,255,0.25)] select-none"
+        className={`${svgSize} drop-shadow-[0_0_25px_rgba(0,240,255,0.25)] select-none`}
       >
         <defs>
           <radialGradient id="plasmaCore" cx="50%" cy="50%" r="50%">
@@ -71,102 +83,90 @@ export function RoboticEnergyCore({
           <circle
             cx="200"
             cy="200"
-            r="180"
+            r="185"
             fill="none"
-            stroke="rgba(0, 240, 255, 0.2)"
+            stroke={glowColor}
             strokeWidth="1.5"
-            strokeDasharray="8 6"
+            strokeDasharray="4 8"
+            opacity="0.4"
           />
           <circle
             cx="200"
             cy="200"
-            r="188"
+            r="175"
             fill="none"
-            stroke={isFullyCharged ? "#c9a227" : "rgba(255, 255, 255, 0.3)"}
-            strokeWidth="2.5"
-            strokeDasharray="40 80"
+            stroke={glowColor}
+            strokeWidth="3"
+            strokeDasharray="45 15 25 15"
+            opacity="0.8"
           />
-          {/* Heavy Mechanical Brackets */}
-          {[0, 90, 180, 270].map((deg) => (
-            <g key={deg} transform={`rotate(${deg} 200 200)`}>
-              <rect
-                x="195"
-                y="8"
-                width="10"
-                height="12"
-                fill={isFullyCharged ? "#c9a227" : "#00f0ff"}
-              />
-              <path
-                d="M 185 20 L 215 20 L 205 28 L 195 28 Z"
-                fill={isFullyCharged ? "rgba(201,162,39,0.7)" : "rgba(0,240,255,0.5)"}
-              />
-            </g>
-          ))}
+          {/* Mechanical Calipers at 90-degree points */}
+          <path d="M 195 15 L 205 15 L 200 25 Z" fill={glowColor} />
+          <path d="M 195 385 L 205 385 L 200 375 Z" fill={glowColor} />
+          <path d="M 15 195 L 15 205 L 25 200 Z" fill={glowColor} />
+          <path d="M 385 195 L 385 205 L 375 200 Z" fill={glowColor} />
         </g>
 
-        {/* 2. Middle Telemetry Gear Ring (Rotates clockwise) */}
-        <g className="animate-[spin_20s_linear_infinite] origin-center">
+        {/* 2. Middle Planetary Gear & Chevron Ring (Rotates clockwise) */}
+        <g className="animate-[spin_24s_linear_infinite] origin-center">
           <circle
             cx="200"
             cy="200"
             r="150"
             fill="none"
-            stroke={isFullyCharged ? "rgba(201, 162, 39, 0.4)" : "rgba(56, 189, 248, 0.3)"}
-            strokeWidth="6"
-            strokeDasharray="3 4"
-          />
-          <circle
-            cx="200"
-            cy="200"
-            r="142"
-            fill="none"
-            stroke={isFullyCharged ? "#fbbf24" : "#00f0ff"}
-            strokeWidth="1.5"
-            strokeDasharray="30 20 10 20"
-          />
-          {/* Angular Chevron Guides */}
-          {[45, 135, 225, 315].map((deg) => (
-            <g key={deg} transform={`rotate(${deg} 200 200)`}>
-              <path
-                d="M 197 52 L 200 56 L 203 52"
-                fill="none"
-                stroke={isFullyCharged ? "#c9a227" : "#38bdf8"}
-                strokeWidth="2"
-              />
-            </g>
-          ))}
-        </g>
-
-        {/* 3. High-Speed Inner Magnetic Containment Ring */}
-        <g className="animate-[spin_8s_linear_infinite] origin-center">
-          <circle
-            cx="200"
-            cy="200"
-            r="115"
-            fill="none"
             stroke={isFullyCharged ? "#fef08a" : "#00f0ff"}
-            strokeWidth="3"
-            strokeDasharray="60 30"
-            filter="url(#glow)"
+            strokeWidth="2"
+            strokeDasharray="8 6 2 6"
+            opacity="0.6"
           />
           <circle
             cx="200"
             cy="200"
-            r="105"
+            r="135"
             fill="none"
-            stroke="rgba(255, 255, 255, 0.35)"
-            strokeWidth="1"
-            strokeDasharray="4 4"
+            stroke={glowColor}
+            strokeWidth="6"
+            strokeDasharray="3 9"
+            opacity="0.75"
+          />
+          {/* Orbital Data Notches */}
+          <circle cx="200" cy="50" r="4" fill={glowColor} />
+          <circle cx="200" cy="350" r="4" fill={glowColor} />
+          <circle cx="50" cy="200" r="4" fill={glowColor} />
+          <circle cx="350" cy="200" r="4" fill={glowColor} />
+        </g>
+
+        {/* 3. High-Speed Inner Cyan Turbine (Rotates counter-clockwise) */}
+        <g className="animate-[spin_12s_linear_infinite_reverse] origin-center">
+          <circle
+            cx="200"
+            cy="200"
+            r="112"
+            fill="none"
+            stroke={isFullyCharged ? "#fbbf24" : "#38bdf8"}
+            strokeWidth="2.5"
+            strokeDasharray="60 30"
+            opacity="0.9"
+          />
+          <circle
+            cx="200"
+            cy="200"
+            r="98"
+            fill="none"
+            stroke={glowColor}
+            strokeWidth="1.5"
+            strokeDasharray="12 4"
+            opacity="0.7"
           />
         </g>
 
-        {/* 4. Center Glowing Plasma Sphere */}
+        {/* 4. Central Glowing Plasma Core Sphere */}
         <circle
           cx="200"
           cy="200"
-          r={isOpened ? 90 : isCountdown ? 85 : 75}
+          r="84"
           fill="url(#plasmaCore)"
-          className={`transition-all duration-500 ${isCountdown ? "animate-pulse" : ""}`}
+          className="transition-all duration-1000"
         />
 
         {/* Dynamic Energy Level Arc */}
@@ -186,7 +186,11 @@ export function RoboticEnergyCore({
         />
 
         {/* Laser Crosshair Reticles in Core Center */}
-        <g stroke={glowColor} strokeWidth="1" opacity="0.6">
+        <g
+          stroke={glowColor}
+          strokeWidth="1"
+          opacity={activatedCount > 0 || isOpened ? "0.2" : "0.4"}
+        >
           <line x1="200" y1="170" x2="200" y2="185" />
           <line x1="200" y1="215" x2="200" y2="230" />
           <line x1="170" y1="200" x2="185" y2="200" />
@@ -200,26 +204,28 @@ export function RoboticEnergyCore({
         {isCountdown ? (
           <span
             key={countdownSeconds}
-            className="font-heading text-8xl sm:text-9xl font-extrabold tabular-nums tracking-tighter text-white drop-shadow-[0_0_35px_#c9a227] animate-[display-digit_450ms_ease]"
+            className="font-heading text-7xl sm:text-9xl font-extrabold tabular-nums tracking-tighter text-white drop-shadow-[0_0_35px_#c9a227] animate-[display-digit_450ms_ease]"
           >
             {countdownSeconds}
           </span>
         ) : isOpened ? (
-          <div className="flex flex-col items-center gap-1 animate-pulse">
-            <span className="font-mono text-xs tracking-widest text-gold uppercase">REACTOR</span>
-            <span className="font-heading text-3xl font-extrabold text-white tracking-wider">
+          <div className="flex flex-col items-center gap-0.5 animate-pulse">
+            <span className="font-mono text-[10px] sm:text-xs tracking-widest text-gold uppercase drop-shadow">
+              REACTOR
+            </span>
+            <span className="font-heading text-xl sm:text-2xl font-extrabold text-white tracking-wider drop-shadow-[0_0_10px_#c9a227]">
               ONLINE
             </span>
           </div>
         ) : (
-          <div className="flex flex-col items-center">
-            <span className="font-mono text-[10px] tracking-widest text-cyan-300/80 uppercase">
+          <div className="flex flex-col items-center justify-center gap-0.5">
+            <span className="font-mono text-[9px] sm:text-[10px] tracking-widest text-cyan-300/80 uppercase">
               ENERGY CORE
             </span>
-            <span className="font-mono text-xl sm:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]">
+            <span className="font-mono text-base sm:text-2xl font-black text-white drop-shadow-[0_0_12px_rgba(0,240,255,0.9)] leading-none my-0.5">
               {Math.round((activatedCount / 3) * 100)}%
             </span>
-            <span className="font-mono text-[9px] tracking-widest text-cyan-400/60 uppercase">
+            <span className="font-mono text-[8px] sm:text-[9px] font-semibold tracking-wider text-cyan-300 uppercase bg-navy-blue/80 px-2 py-0.5 rounded-full border border-cyan-500/30">
               {activatedCount === 3 ? "LOCKED // ARMED" : `${activatedCount}/3 SIGNALS`}
             </span>
           </div>

@@ -57,7 +57,7 @@ export function GuestMonitoring({ state, devices, availability }: GuestMonitorin
             <div
               key={role}
               data-guest-card={role}
-              className={`flex flex-col justify-between rounded-xl border p-5 transition-shadow ${
+              className={`flex min-w-0 flex-col justify-between rounded-xl border p-4 sm:p-5 transition-shadow ${
                 isActivated
                   ? "border-emerald-300 bg-emerald-50/40 shadow-xs"
                   : "border-slate-200 bg-slate-50/60"

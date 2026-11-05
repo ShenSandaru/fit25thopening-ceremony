@@ -182,6 +182,12 @@ export function GuestExperience({ expectedRole }: GuestExperienceProps) {
           <SlideToActivate
             disabled={view !== "ready" || !channel.connected}
             busy={submitting && !serverActivated}
+            isActivated={
+              serverActivated ||
+              view === "activated" ||
+              view === "countdown" ||
+              view === "completed"
+            }
             onActivate={activate}
           />
 

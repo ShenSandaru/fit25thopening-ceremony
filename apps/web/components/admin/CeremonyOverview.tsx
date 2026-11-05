@@ -101,24 +101,38 @@ export function CeremonyOverview({ state, devices, connected }: CeremonyOverview
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 sm:grid-cols-4">
-        <div className="rounded-lg bg-slate-50 p-3.5">
+      <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 xl:grid-cols-4">
+        <div className="rounded-lg bg-slate-50 p-3.5 min-w-0">
           <p className="text-xs font-medium text-slate-500">Ceremony State</p>
-          <p className="mt-1 font-heading text-lg font-bold text-navy-blue">{status}</p>
+          <p
+            className="mt-1 font-heading text-sm sm:text-base xl:text-lg font-bold text-navy-blue"
+            title={status}
+          >
+            {status === "COLLECTING_ACTIVATIONS" ? (
+              <span className="flex flex-col sm:inline sm:space-x-1">
+                <span>COLLECTING</span>
+                <span className="text-xs font-mono font-medium text-navy-blue/80 uppercase">
+                  ACTIVATIONS
+                </span>
+              </span>
+            ) : (
+              status
+            )}
+          </p>
         </div>
 
-        <div className="rounded-lg bg-slate-50 p-3.5">
+        <div className="rounded-lg bg-slate-50 p-3.5 min-w-0">
           <p className="text-xs font-medium text-slate-500">Guest Activations</p>
-          <p className="mt-1 font-heading text-lg font-bold text-navy-blue">
+          <p className="mt-1 font-heading text-base xl:text-lg font-bold text-navy-blue truncate">
             <span className={activatedCount === 3 ? "text-emerald-700" : ""}>{activatedCount}</span>{" "}
             / 3 Ready
           </p>
         </div>
 
-        <div className="rounded-lg bg-slate-50 p-3.5">
+        <div className="rounded-lg bg-slate-50 p-3.5 min-w-0">
           <p className="text-xs font-medium text-slate-500">Main Projector Display</p>
           <p
-            className={`mt-1 font-heading text-lg font-bold ${
+            className={`mt-1 font-heading text-base xl:text-lg font-bold truncate ${
               isDisplayConnected ? "text-emerald-700" : "text-amber-700"
             }`}
           >
@@ -126,9 +140,9 @@ export function CeremonyOverview({ state, devices, connected }: CeremonyOverview
           </p>
         </div>
 
-        <div className="rounded-lg bg-slate-50 p-3.5">
+        <div className="rounded-lg bg-slate-50 p-3.5 min-w-0">
           <p className="text-xs font-medium text-slate-500">Countdown Status</p>
-          <p className="mt-1 font-heading text-lg font-bold text-navy-blue">
+          <p className="mt-1 font-heading text-base xl:text-lg font-bold text-navy-blue truncate">
             {status === "COUNTDOWN"
               ? `${(state?.countdown?.durationMs ?? 5000) / 1000}s Running`
               : status === "OPENED"

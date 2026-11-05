@@ -12,7 +12,7 @@ type HolographicHandprintsProps = {
 export function HolographicHandprints({ state, devices }: HolographicHandprintsProps) {
   return (
     <div className="relative z-20 w-full max-w-6xl px-4">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
         {GUEST_ROLES.map((role) => {
           const status = guestIndicatorStatus(role, state, devices);
           const isActivated = status === "activated";
@@ -24,7 +24,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
               key={role}
               data-guest={role}
               data-guest-status={status}
-              className={`relative flex flex-col items-center justify-between rounded-2xl border p-6 backdrop-blur-md transition-all duration-700 ${
+              className={`relative flex flex-col items-center justify-between rounded-2xl border p-4 sm:p-6 backdrop-blur-md transition-all duration-700 ${
                 isActivated
                   ? "border-gold/80 bg-navy-blue/80 shadow-[0_0_30px_rgba(201,162,39,0.25)]"
                   : isConnected
@@ -59,7 +59,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
               />
 
               {/* Station Header */}
-              <div className="flex w-full items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex w-full items-center justify-between border-b border-white/10 pb-2 sm:pb-3">
                 <span className="font-mono text-xs font-bold tracking-widest text-gold uppercase">
                   {generic.station} · {generic.position}
                 </span>
@@ -86,7 +86,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
               </div>
 
               {/* Holographic Handprint Biometric Pod */}
-              <div className="relative my-6 flex size-44 items-center justify-center">
+              <div className="relative my-3 sm:my-6 flex size-36 sm:size-44 items-center justify-center">
                 {/* Rotating Mechanical Bracket Ring */}
                 <svg
                   viewBox="0 0 200 200"
@@ -117,7 +117,7 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
                 </svg>
 
                 {/* Handprint Vector Illustration */}
-                <div className="relative size-28">
+                <div className="relative size-24 sm:size-28">
                   <svg
                     viewBox="0 0 100 120"
                     className={`size-full transition-all duration-700 ${
@@ -177,11 +177,11 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
 
               {/* Designation & Status Readout */}
               <div className="w-full text-center">
-                <h3 className="font-heading text-xl font-extrabold text-white tracking-wide">
+                <h3 className="font-heading text-lg sm:text-xl font-extrabold text-white tracking-wide">
                   {generic.label}
                 </h3>
                 <p
-                  className={`mt-1 font-mono text-xs font-semibold tracking-widest uppercase ${
+                  className={`mt-1 font-mono text-[10px] sm:text-xs font-semibold tracking-widest uppercase ${
                     isActivated
                       ? "text-gold drop-shadow-[0_0_8px_rgba(201,162,39,0.5)]"
                       : isConnected
@@ -197,14 +197,17 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
                 </p>
               </div>
 
-              {/* Energy Signal Conduits (Pulsing towards central core) */}
+              {/* Energy Signal Conduits (Pulsing upwards toward central core) */}
               {isActivated && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
+                  className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-30"
                 >
+                  <span className="font-mono text-[8px] font-bold text-gold tracking-widest uppercase drop-shadow-[0_0_6px_#c9a227]">
+                    ▲ SIGNAL TRANSMITTING
+                  </span>
                   <span className="size-2 rounded-full bg-gold animate-ping" />
-                  <span className="h-6 w-0.5 bg-gradient-to-b from-gold to-transparent" />
+                  <span className="h-5 w-0.5 bg-gradient-to-t from-gold to-transparent" />
                 </div>
               )}
             </div>

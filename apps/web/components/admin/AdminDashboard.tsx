@@ -186,7 +186,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100/70 p-4 sm:p-6 lg:p-8 font-sans">
+    <div className="min-h-screen bg-slate-100/70 p-4 sm:p-6 xl:p-8 font-sans overflow-x-hidden">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Global Feedback Alert */}
         {feedback && (
