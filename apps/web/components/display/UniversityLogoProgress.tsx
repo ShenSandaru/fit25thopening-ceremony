@@ -134,4 +134,3 @@ export function UniversityLogoProgress({ activatedCount }: UniversityLogoProgres
     </div>
   );
 }
-

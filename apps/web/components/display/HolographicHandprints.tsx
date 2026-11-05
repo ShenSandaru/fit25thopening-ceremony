@@ -185,11 +185,8 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
               {isActivated && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-30"
+                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-30"
                 >
-                  <span className="font-mono text-[8px] font-bold text-gold tracking-widest uppercase drop-shadow-[0_0_6px_#c9a227]">
-                    ▲ SIGNAL TRANSMITTING
-                  </span>
                   <span className="size-2 rounded-full bg-gold animate-ping" />
                   <span className="h-5 w-0.5 bg-gradient-to-t from-gold to-transparent" />
                 </div>
