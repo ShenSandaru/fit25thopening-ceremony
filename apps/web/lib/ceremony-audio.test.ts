@@ -101,8 +101,39 @@ describe("CeremonyAudio", () => {
     expect(CEREMONY_AUDIO_CONFIG.cues.activation).toBe("/audio/placeholders/activation.wav");
     expect(CEREMONY_AUDIO_CONFIG.cues.countdown).toBe("/audio/placeholders/countdown.wav");
     expect(CEREMONY_AUDIO_CONFIG.cues.sync).toBe("/audio/placeholders/voiceover.wav");
-    expect(CEREMONY_AUDIO_CONFIG.cues.impact).toBe("/audio/placeholders/opening.mp3");
-    expect(CEREMONY_AUDIO_CONFIG.cues.opening).toBe("/audio/placeholders/opening.mp3");
+    expect(CEREMONY_AUDIO_CONFIG.cues.impact).toBe("/audio/placeholders/fitexpo.wav");
+    expect(CEREMONY_AUDIO_CONFIG.cues.opening).toBe("/audio/placeholders/fitexpo.wav");
+  });
+
+  it("fades out fitexpo.wav after 5 seconds and smoothly resumes background music", async () => {
+    const { factory, played, paused, instances } = fakeFactory(true);
+    const audio = new CeremonyAudio(factory);
+    audio.preload();
+
+    await audio.unlock("waiting");
+    const bgClip = instances.get("/audio/bg_music.mp3")!;
+    bgClip.currentTime = 18.4;
+
+    vi.useFakeTimers();
+    audio.pauseBackground(true);
+    audio.playCue("impact");
+
+    const voiceClip = instances.get("/audio/placeholders/fitexpo.wav")!;
+    expect(played).toContain("/audio/placeholders/fitexpo.wav");
+    expect(voiceClip.volume).toBe(1);
+
+    // Advance 5 seconds: voice clip begins fading out and bg_music resumes from 18.4s
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(bgClip.currentTime).toBe(18.4);
+
+    // Advance through the 2-second fade transition
+    await vi.advanceTimersByTimeAsync(2_100);
+    expect(voiceClip.volume).toBe(0);
+    expect(paused).toContain("/audio/placeholders/fitexpo.wav");
+    expect(bgClip.volume).toBeCloseTo(CEREMONY_AUDIO_CONFIG.volumes.finalLaunchMusic, 2);
+
+    audio.stop();
+    vi.useRealTimers();
   });
 
   it("transitions background music tracks according to ceremony state", async () => {
