@@ -116,49 +116,33 @@ export function HolographicHandprints({ state, devices }: HolographicHandprintsP
                   />
                 </svg>
 
-                {/* Handprint Vector Illustration */}
-                <div className="relative size-24 sm:size-28">
+                {/* Biometric Fingerprint Vector Icon */}
+                <div className="relative size-20 sm:size-24 flex items-center justify-center">
                   <svg
-                    viewBox="0 0 100 120"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
                     className={`size-full transition-all duration-700 ${
                       isActivated
                         ? "text-gold drop-shadow-[0_0_15px_#c9a227]"
                         : isConnected
-                          ? "text-cyan-400 drop-shadow-[0_0_10px_#00f0ff]"
-                          : "text-slate-600"
+                          ? "text-cyan-400 drop-shadow-[0_0_12px_#00f0ff]"
+                          : "text-slate-600/70"
                     }`}
                   >
-                    {/* Palm Silhouette & Circuit Lines */}
-                    <path
-                      d="M30 45 C28 35 25 22 25 15 C25 10 32 10 33 15 C35 28 37 38 37 45 M42 40 C42 28 42 12 43 8 C44 4 51 4 52 8 C53 18 53 32 52 40 M57 42 C58 32 60 18 61 14 C62 10 69 11 69 15 C68 25 66 35 65 44 M70 52 C73 42 77 30 79 26 C81 22 87 25 86 30 C83 40 78 52 75 60 M22 55 C16 60 10 68 8 74 C6 80 12 84 16 80 C20 75 25 68 28 62 M28 62 C28 75 30 95 38 105 C45 112 58 112 65 105 C73 95 75 75 75 60 Z"
-                      fill="currentColor"
-                      fillOpacity={isActivated ? "0.25" : "0.15"}
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    {/* Inner Cybernetic Nodes */}
-                    <circle cx="50" cy="75" r="4" fill="currentColor" />
-                    <line
-                      x1="50"
-                      y1="75"
-                      x2="35"
-                      y2="60"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeDasharray="2 2"
-                    />
-                    <line
-                      x1="50"
-                      y1="75"
-                      x2="65"
-                      y2="60"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeDasharray="2 2"
-                    />
-                    <line x1="50" y1="75" x2="50" y2="95" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+                    <path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
+                    <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+                    <path d="M2 12a10 10 0 0 1 18-6" />
+                    <path d="M2 16h.01" />
+                    <path d="M21.8 16c.2-2 .131-5.354 0-6" />
+                    <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
+                    <path d="M8.65 22c.21-.66.45-1.32.57-2" />
+                    <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
                   </svg>
 
                   {/* Vertical Digital Scanning Laser Beam (Sweeps when activated or linked) */}
