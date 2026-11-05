@@ -8,7 +8,6 @@ import { countdownSecondsRemaining, displayView } from "@/lib/ceremony-sync";
 import { FuturisticHudOverlay } from "./FuturisticHudOverlay";
 import { UniversityLogoProgress } from "./UniversityLogoProgress";
 import { HolographicHandprints } from "./HolographicHandprints";
-import { SystemInitialization } from "./SystemInitialization";
 import { FuturisticCountdown } from "./FuturisticCountdown";
 import { LaunchReveal } from "./LaunchReveal";
 
@@ -24,7 +23,7 @@ export function CeremonyDisplay() {
   });
   const view = claim === "ready" ? synced : claim === "pending" ? "reconnecting" : claim;
   const seconds =
-    channel.ceremony?.countdown && view === "countdown"
+    channel.ceremony?.countdown && (view === "countdown" || view === "all-activated")
       ? countdownSecondsRemaining(channel.ceremony.countdown.opensAt, channel.now)
       : null;
 
@@ -226,9 +225,7 @@ export function CeremonyDisplay() {
               {/* Holographic Handprint Stations for Guest 1, Guest 2, Guest 3 */}
               <HolographicHandprints state={channel.ceremony} devices={channel.devices} />
             </div>
-          ) : view === "all-activated" ? (
-            <SystemInitialization />
-          ) : view === "countdown" ? (
+          ) : view === "all-activated" || view === "countdown" ? (
             <FuturisticCountdown seconds={seconds} />
           ) : view === "opened" ? (
             <LaunchReveal audioUnavailable={channel.audioUnavailable} />
