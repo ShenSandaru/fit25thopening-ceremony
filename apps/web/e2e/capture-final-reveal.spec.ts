@@ -58,12 +58,15 @@ test("capture final launch reveal at all 5 target resolutions", async ({ browser
     // Wait for display to transition to 'opened'
     await expect(display.locator("[data-display-view=opened]")).toBeVisible({ timeout: 25_000 });
 
-    // Ensure the FIT 25 anniversary image is fully loaded
+    // Ensure the FIT 25 anniversary image and University of Moratuwa logo are fully loaded
     const anniversaryImg = display.locator("img[alt*='FIT 25th Anniversary']");
     await expect(anniversaryImg).toBeVisible();
+    const uomLogo = display.locator("img[alt*='University of Moratuwa']");
+    await expect(uomLogo).toBeVisible();
     await display.waitForFunction(() => {
-      const img = document.querySelector("img[alt*='FIT 25th Anniversary']") as HTMLImageElement;
-      return img && img.complete && img.naturalWidth > 0;
+      const img1 = document.querySelector("img[alt*='FIT 25th Anniversary']") as HTMLImageElement;
+      const img2 = document.querySelector("img[alt*='University of Moratuwa']") as HTMLImageElement;
+      return img1?.complete && img1.naturalWidth > 0 && img2?.complete && img2.naturalWidth > 0;
     });
 
     // Capture screenshots at all 5 target resolutions
